@@ -1,0 +1,203 @@
+﻿@page
+@model WebClient.Pages.Manager.ListUsersModel
+
+@{
+    ViewData["Title"] = "List Users";
+}
+
+
+<div class="d-flex justify-content-between">
+    <h3>List Users</h3>
+    <div class="d-flex align-items-end">
+        <button id="btn-add-user" class="btn btn-primary btn-sm"><i class="bi bi-plus-square"></i> Add User</button>
+        <button class="btn btn-primary btn-sm mx-2"><i class="bi bi-download"></i> Download template</button>
+        <button class="btn btn-primary btn-sm"><i class="bi bi-upload"></i> Import Users</button>
+        <button class="btn btn-primary btn-sm" style="margin-left: 8px"><i class="bi bi-download"></i> Export Users</button>
+    </div>
+</div>
+
+@*
+    Modal AddUser
+*@
+<div class="modal" id="add-user-modal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-person-fill-add"></i> Add User</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <label class="col-form-label-sm">Fullname</label>
+                <input id="add-uname" class="form-control form-control-sm" type="text" />
+                
+                <label class="col-form-label-sm">Email</label>
+                <input id="add-uemail" class="form-control form-control-sm" type="text" />
+
+                <label class="col-form-label-sm">Password</label>
+                <div class="d-flex">
+                    <input id="add-upw" class="form-control form-control-sm" type="password" />
+                    <i id="eye-password" class="bi bi-eye"></i>
+                </div> 
+
+                <label class="col-form-label-sm">Confirm password</label>
+                <div class="d-flex">
+                    <input id="confirm-upw" class="form-control form-control-sm" type="password" />
+                    <i id="confirm-eye-password" class="bi bi-eye"></i>
+                </div>
+                
+                <label class="col-form-label-sm">Phone</label>
+                <input id="add-uphone" class="form-control form-control-sm" type="number" />
+
+                <label class="col-form-label-sm">Address</label>
+                <input id="add-uaddress" class="form-control form-control-sm" type="text" />
+
+                <label class="col-form-label-sm">Role</label>
+                <select id="add-urole" class="form-select form-select-sm">
+                    <optgroup label="choose role">
+                        <option value="1">admin</option>
+                        <option value="2" selected>teacher</option>
+                        <option value="3">student</option>
+                    </optgroup>
+                </select>
+
+                <label class="col-form-label-sm">Status</label>
+                <select id="add-ustatus" class="form-select form-select-sm">
+                    <optgroup label="choose status">
+                        <option value="0">active</option>
+                        <option value="1" selected>block</option>
+                    </optgroup>
+                </select>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary btn-sm" onclick=""><i class="bi bi-save"></i> Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@*
+    Modal EditUser
+*@
+<div class="modal" id="edit-user-modal" tabindex="-2">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-pencil-square"></i> Edit</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <label class="col-form-label-sm">Id</label>
+                <input id="edit-id" class="form-control form-control-sm" readonly />
+
+                <label class="col-form-label-sm">Fullname</label>
+                <input id="edit-uname" class="form-control form-control-sm" type="text" />
+
+                <label class="col-form-label-sm">Email</label>
+                <input id="edit-uemail" class="form-control form-control-sm" type="text" />
+
+                <label class="col-form-label-sm">Password</label>
+                <div class="d-flex">
+                    <input id="edit-upw" class="form-control form-control-sm" type="password" />
+                    <i id="edit-eye-password" class="bi bi-eye"></i>
+                </div> 
+
+                <label class="col-form-label-sm">Phone</label>
+                <input id="edit-uphone" class="form-control form-control-sm" type="number" />
+
+                <label class="col-form-label-sm">Address</label>
+                <input id="edit-uaddress" class="form-control form-control-sm" type="text" />
+
+                <label class="col-form-label-sm">Role</label>
+                <select id="edit-urole" class="form-select form-select-sm">
+                    <optgroup label="choose role">
+                        <option value="1">admin</option>
+                        <option value="2">teacher</option>
+                        <option value="3">student</option>
+                    </optgroup>
+                </select>
+
+                <label class="col-form-label-sm">Status</label>
+                <select id="edit-ustatus" class="form-select form-select-sm">
+                    <optgroup label="choose status">
+                        <option value="0">block</option>
+                        <option value="1">active</option>
+                    </optgroup>
+                </select>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary btn-sm" onclick=""><i class="bi bi-save"></i> Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<table class="table table-bordered table-striped mt-2 table-responsive">
+    <thead class="bg-info bg-gradient bg-opacity-75">
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">
+                UserId<br />
+                <input id="search-uid" class="form-control form-control-sm" type="text" />
+            </th>
+            <th scope="col">
+                Fullname<br />
+                <input id="search-uname" class="form-control form-control-sm" type="text" />
+            </th>
+            <th scope="col">
+                Email<br />
+                <input id="search-uemail" class="form-control form-control-sm" type="text" />
+            </th>
+            <th scope="col">
+                Phone<br />
+                <input id="search-uphone" class="form-control form-control-sm" type="text" />
+            </th>
+            <th scope="col">
+                Address<br />
+                <input id="search-uaddress" class="form-control form-control-sm" type="text" />
+            </th>
+            <th scope="col">
+                Role<br />
+                <select id="select-role" class="form-select form-select-sm">
+                    <option value="" selected>all role</option>
+                    <option>admin</option>
+                    <option>teacher</option>
+                    <option>student</option>
+                </select>
+            </th>
+            <th scope="col">
+                Status<br />
+                <select id="select-status" class="form-select form-select-sm">
+                    <option value="" selected>all status</option>
+                    <option>active</option>
+                    <option>block</option>
+                </select>
+            </th>
+            <th scope="col">Action</th>
+        </tr>
+    </thead>
+    <tbody id="table-body">
+    </tbody>
+</table>
+
+<div class="d-flex justify-content-end">
+    <div class="mx-2">
+        <select id="select-page-size" class="form-select form-select-sm">
+            <optgroup id="select-optgroup" label="Page sizes">
+
+            </optgroup>
+        </select>
+    </div>
+
+    <nav aria-label="Page navigation">
+        <ul class="pagination pagination-sm">
+        </ul>
+    </nav>
+</div>
+
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/lib/jquery/dist/jquery.js"></script>
+<script src="~/js/manager/listusers.js" asp-append-version="true"></script>

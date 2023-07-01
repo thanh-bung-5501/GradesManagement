@@ -15,6 +15,17 @@ $(function () {
     EyePasswordHandle();
 
     $("#btn-add-user").on("click", function () {
+        // clear items
+        $('#add-uname').val(null);
+        $('#add-uemail').val(null);
+        $('#add-upw').val(null);
+        $('#confirm-upw').val(null);
+        $('#add-uphone').val(null);
+        $('#add-uaddress').val(null);
+        $('#add-urole').val(2);
+        $('#add-ustatus').val(1);
+
+        // show modal
         $("#add-user-modal").modal("show");
     });
 });
@@ -57,6 +68,9 @@ function RenderUsers(pageSize, currentPage) {
         url: `https://localhost:5000/odata/User?$expand=Role` + query,
         type: "GET",
         dataType: 'json',
+        beforeSend: function () {
+            $("#loading").addClass("loader");
+        },
         success: function (listUsers) {
 
             // Create view data users
@@ -86,7 +100,11 @@ function RenderUsers(pageSize, currentPage) {
                 tbody.append(newRow);
             });
 
+            // show paging
             RenderPaging(pageSize, currentPage);
+        },
+        complete: function (data) {
+            $("#loading").removeClass("loader");
         }
     });
 }
@@ -166,11 +184,11 @@ function ShowModalEdit(id) {
             $('#edit-uaddress').val(result.Address);
             $('#edit-urole').val(result.RoleId);
             $('#edit-ustatus').val(result.Status);
+
+            $('#edit-user-modal').modal('show');
         },
         error: function (xhr, status, error) {
             console.log(xhr);
         }
     });
-
-    $('#edit-user-modal').modal('show');
 }

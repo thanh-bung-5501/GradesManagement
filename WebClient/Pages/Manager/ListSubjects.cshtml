@@ -27,16 +27,48 @@
                 <input id="add-code" class="form-control form-control-sm" type="text" />
 
                 <label class="col-form-label-sm">SubjectName</label>
-                <input id="add-code" class="form-control form-control-sm" type="text" />
+                <input id="add-name" class="form-control form-control-sm" type="text" />
 
                 <label class="col-form-label-sm">Teacher</label>
-                <select id="add-teacher-id" class="form-control" placeholder="choose teacher...">
+                <select id="add-teacher-id" style="width: 100%">
                 </select>
-                <div id="teacher-details"></div>
+                <div id="add-teacher-details"></div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
                 <button type="button" class="btn btn-primary btn-sm" onclick=""><i class="bi bi-save"></i> Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@*
+    Modal EditSubject
+*@
+<div class="modal" id="edit-subject-modal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-pencil-square"></i> Edit</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <input id="edit-id" type="hidden" />
+
+                <label class="col-form-label-sm">Code</label>
+                <input id="edit-code" class="form-control form-control-sm" type="text" />
+
+                <label class="col-form-label-sm">SubjectName</label>
+                <input id="edit-name" class="form-control form-control-sm" type="text" />
+
+                <label class="col-form-label-sm">Teacher</label>
+                <select id="edit-teacher-id" style="width: 100%">
+                </select>
+                <div id="edit-teacher-details"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary btn-sm" onclick=""><i class="bi bi-save"></i> Save changes</button>
             </div>
         </div>
     </div>
@@ -70,6 +102,8 @@
     </tbody>
 </table>
 
+<div id="loading"></div>
+
 <div class="d-flex justify-content-end">
     <div class="mx-2">
         <select id="select-page-size" class="form-select form-select-sm">
@@ -84,6 +118,7 @@
         </ul>
     </nav>
 </div>
+
 
 <script src="~/lib/jquery/dist/jquery.min.js"></script>
 <script src="~/lib/jquery/dist/jquery.js"></script>

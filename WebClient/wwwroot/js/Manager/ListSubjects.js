@@ -13,64 +13,133 @@ $(function () {
     });
 
     $("#btn-add-subject").on("click", function () {
-        /*
-         * Load select listTeachers
-         */
-
-        $.ajax({
-            url: `https://localhost:5000/odata/User?$expand=role&$filter=Role/Name eq 'teacher'`,
-            type: "GET",
-            contentType: "application/json; charset=utf-8",
-            dataType: "json",
-            success: function (result, status, xhr) {
-                $('#add-teacher-id').empty();
-                $.each(result.value, function (index, teacher) {
-                    $('#add-teacher-id').append(`<option value="${teacher.Id}" >${teacher.Fullname}</option>`);
-                });
-
-                $('#add-teacher-id').selectize({
-                    sortField: 'text'
-                });
-
-                $("#add-subject-modal").modal("show");
-            },
-            error: function (xhr, status, error) {
-                console.log(xhr);
-            }
-        });
+        ShowModelAdd();
     });
 
     $("#add-teacher-id").on('change', function () {
-
-        // div #teacher details
         var teacherId = $("#add-teacher-id").val();
+        // <div id="add-teacher-details"></div>
+        ShowTeacherInfor("#add-teacher-details",teacherId);
+    });
 
-        //get api teacher details
-        $.ajax({
-            url: `https://localhost:5000/odata/User('${teacherId}')`,
-            type: "GET",
-            contentType: "application/json; charset=utf-8",
-            dataType: "json",
-            success: function (result, status, xhr) {
-                $("#teacher-details").empty();
-
-                console.log(result);
-
-                $("#teacher-details").append(`<b>Teacher Information:</b><br/>`)
-                $("#teacher-details").append(`TeacherId: ${result.Id} <br/> `);
-                $("#teacher-details").append(`Fullname: ${result.Fullname} <br/>`);
-                $("#teacher-details").append(`Email: ${result.Email} <br/>`);
-                $("#teacher-details").append(`Phone: ${result.Phone} <br/>`);
-                $("#teacher-details").append(`Address: ${result.Address} <br/>`);
-
-            },
-            error: function (xhr, status, error) {
-                console.log(xhr);
-            }
-        });
+    $("#edit-teacher-id").on('change', function () {
+        var teacherId = $("#edit-teacher-id").val();
+        // <div id="add-teacher-details"></div>
+        ShowTeacherInfor("#edit-teacher-details", teacherId);
     });
 });
 
+function ShowTeacherInfor(selector,id) {
+    //get api teacher details
+    $.ajax({
+        url: `https://localhost:5000/odata/User('${id}')`,
+        type: "GET",
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        success: function (result, status, xhr) {
+            $(selector).empty();
+
+            if (result !== undefined) {
+                $(selector).append(`(TeacherId: ${result.Id}, Fullname: ${result.Fullname},
+                        Email: ${result.Email}, Phone: ${result.Phone}, Address: ${result.Address}).`);
+            }
+        },
+        error: function (xhr, status, error) {
+            console.log(xhr);
+        }
+    });
+}
+
+function ShowModelAdd() {
+    $.ajax({
+        url: `https://localhost:5000/odata/User?$expand=role&$filter=Role/Name eq 'teacher'`,
+        type: "GET",
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        success: function (result, status, xhr) {
+            // clear items
+            $('#add-code').val(null);
+            $('#add-name').val(null);
+            $('#add-teacher-id').empty();
+
+            //Load select listTeachers
+            $.each(result.value, function (index, teacher) {
+                $('#add-teacher-id').append(`<option value="${teacher.Id}" >${teacher.Fullname}</option>`);
+            });
+
+            //select search
+            $('#add-teacher-id').select2({
+                theme: "classic",
+                minimumResultsForSearch: 1,
+                width: 'resolve',
+                dropdownParent: $("#add-subject-modal"),
+                placeholder: "Select a teacher..."
+            });
+
+            // support show Placeholder
+            $('#add-teacher-id').val(null).trigger('change');
+
+            // show modal
+            $("#add-subject-modal").modal("show");
+        },
+        error: function (xhr, status, error) {
+            console.log(xhr);
+        }
+    });
+}
+
+function ShowModalEdit(id) {
+    $.ajax({
+        url: `https://localhost:5000/odata/subject(${id})?$expand=user`,
+        type: "GET",
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        success: function (result, status, xhr) {
+
+            //Load select listTeachers
+            $.ajax({
+                url: `https://localhost:5000/odata/User?$expand=role&$filter=Role/Name eq 'teacher'`,
+                type: "GET",
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (teachers, status, xhr) {
+                    // clear items
+                    $('#edit-teacher-id').empty();
+
+                    //Load select listTeachers
+                    $.each(teachers.value, function (index, teacher) {
+                        $('#edit-teacher-id').append(`<option value="${teacher.Id}" >${teacher.Fullname}</option>`);
+                    });
+
+                    //select search
+                    $('#edit-teacher-id').select2({
+                        theme: "classic",
+                        minimumResultsForSearch: 1,
+                        width: 'resolve',
+                        dropdownParent: $("#edit-subject-modal")
+                    });
+
+                    //Load detail subject
+                    $('#edit-id').val(result.Id);
+                    $('#edit-code').val(result.Code);
+                    $('#edit-name').val(result.Name);
+
+                    // support load data .trigger('change')
+                    $('#edit-teacher-id').val(result.TeacherId).trigger('change');
+
+                },
+                error: function (xhr, status, error) {
+                    console.log(xhr);
+                }
+            });
+            $('#edit-subject-modal').modal('show');
+
+        },
+        error: function (xhr, status, error) {
+            console.log(xhr);
+        }
+    });
+}
 
 function RenderSubjects(pageSize, currentPage) {
 
@@ -81,8 +150,10 @@ function RenderSubjects(pageSize, currentPage) {
         url: `https://localhost:5000/odata/subject?$expand=user` + query,
         type: "GET",
         dataType: 'json',
+        beforeSend: function () {
+            $("#loading").addClass("loader");
+        },
         success: function (listSubjects) {
-
             // Create view data users
             $("#table-body").empty();
             $.each(listSubjects.value, function (index, subject) {
@@ -101,9 +172,11 @@ function RenderSubjects(pageSize, currentPage) {
                 tdAction.append(`<button class="btn btn-danger btn-sm" onClick="DeleteProduct(${subject.Id})"><i class="bi bi-trash"></i> Delete</button>`);
                 newRow.append(tdAction);
                 tbody.append(newRow);
-            });
-
-            RenderPaging(pageSize, currentPage);
+            }),
+                RenderPaging(pageSize, currentPage);
+        },
+        complete: function (data) {
+            $("#loading").removeClass("loader");
         }
     });
 }

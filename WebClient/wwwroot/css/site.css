@@ -57,3 +57,7 @@ body {
     }
 }
 
+.icon-sort{
+    font-size: 30px;
+    cursor: pointer;
+}

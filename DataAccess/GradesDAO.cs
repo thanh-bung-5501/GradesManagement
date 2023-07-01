@@ -1,17 +1,17 @@
 ﻿using BusinessObjects;
+using Microsoft.EntityFrameworkCore;
 
 namespace DataAccess
 {
     public class GradesDAO
     {
-        private MyDBcontext context;
+        private static MyDBcontext _context = new MyDBcontext();
         public GradesDAO(MyDBcontext context)
         {
-            this.context = context;
+            _context = context;
         }
-        public List<Grades> GetGrades()
-        {
-            return context.Grades.ToList();
-        }
+        public static List<Grades> GetGrades() => _context.Grades.Include(x => x.User).ToList();
+
+        public static Subject GetSubjectById(int id) => _context.Subject.SingleOrDefault(x => x.Id == id)!;
     }
 }

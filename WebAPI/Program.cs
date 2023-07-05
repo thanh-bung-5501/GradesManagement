@@ -9,6 +9,7 @@ static IEdmModel GetEdmModel()
 {
     ODataConventionModelBuilder builder = new();
     builder.EntitySet<GradesDTO>("Grades");
+    builder.EntitySet<GradeCategoryDTO>("GradeCategory");
     builder.EntitySet<UserDTO>("User");
     builder.EntitySet<RoleDTO>("Role");
     builder.EntitySet<SubjectDTO>("Subject");

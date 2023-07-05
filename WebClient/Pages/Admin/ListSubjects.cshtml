@@ -8,7 +8,7 @@
 <div class="d-flex justify-content-between">
     <h3>List Subjects</h3>
     <div class="d-flex align-items-end">
-        <button id="btn-add-subject" class="btn btn-primary btn-sm"><i class="bi bi-plus-square"></i> Add Subject</button>    
+        <button id="btn-add-subject" class="btn btn-primary btn-sm"><i class="bi bi-plus-square"></i> Add Subject</button>
     </div>
 </div>
 
@@ -54,7 +54,7 @@
             </div>
             <div class="modal-body">
                 <label class="col-form-label-sm">Id</label>
-                <input id="edit-id" readonly class="form-control form-control-sm"    />
+                <input id="edit-id" readonly class="form-control form-control-sm" />
 
                 <label class="col-form-label-sm">Code</label>
                 <input id="edit-code" class="form-control form-control-sm" type="text" />
@@ -109,7 +109,6 @@
     <div class="mx-2">
         <select id="select-page-size" class="form-select form-select-sm">
             <optgroup id="select-optgroup" label="Page sizes">
-
             </optgroup>
         </select>
     </div>
@@ -120,7 +119,6 @@
     </nav>
 </div>
 
-
-<script src="~/lib/jquery/dist/jquery.min.js"></script>
-<script src="~/lib/jquery/dist/jquery.js"></script>
-<script src="~/js/manager/listsubjects.js"></script>
+@section scripts{
+    <script src="~/js/Admin/ListSubjects.js"></script>
+}

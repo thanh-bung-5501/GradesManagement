@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using BusinessObjects;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace WebAPI.Models
@@ -23,8 +24,14 @@ namespace WebAPI.Models
 
         public DateTime ModifiedOn { get; set; }
 
-        public int CreatedBy { get; set; }
+        public string CreatedBy { get; set; }
 
-        public int ModifiedBy { get; set; }
+        public string ModifiedBy { get; set; }
+
+        public UserDTO User { get; set; }
+
+        public SubjectDTO Subject { get; set; }
+
+        public GradeCategoryDTO GradeCategory { get; set; }
     }
 }

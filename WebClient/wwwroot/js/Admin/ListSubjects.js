@@ -19,7 +19,7 @@ $(function () {
     $("#add-teacher-id").on('change', function () {
         var teacherId = $("#add-teacher-id").val();
         // <div id="add-teacher-details"></div>
-        ShowTeacherInfor("#add-teacher-details",teacherId);
+        ShowTeacherInfor("#add-teacher-details", teacherId);
     });
 
     $("#edit-teacher-id").on('change', function () {
@@ -29,7 +29,7 @@ $(function () {
     });
 });
 
-function ShowTeacherInfor(selector,id) {
+function ShowTeacherInfor(selector, id) {
     //get api teacher details
     $.ajax({
         url: `https://localhost:5000/odata/User('${id}')`,
@@ -64,7 +64,7 @@ function ShowModelAdd() {
 
             //Load select listTeachers
             $.each(result.value, function (index, teacher) {
-                $('#add-teacher-id').append(`<option value="${teacher.Id}" >${teacher.Fullname}</option>`);
+                $('#add-teacher-id').append(`<option value="${teacher.Id}">${teacher.Fullname}-${teacher.Email}</option>`);
             });
 
             //select search
@@ -108,7 +108,7 @@ function ShowModalEdit(id) {
 
                     //Load select listTeachers
                     $.each(teachers.value, function (index, teacher) {
-                        $('#edit-teacher-id').append(`<option value="${teacher.Id}" >${teacher.Fullname}</option>`);
+                        $('#edit-teacher-id').append(`<option value="${teacher.Id}" >${teacher.Id}-${teacher.Fullname}</option>`);
                     });
 
                     //select search
@@ -167,13 +167,12 @@ function RenderSubjects(pageSize, currentPage) {
                 newRow.append(`<td class="text-truncate">${subject.TeacherId != null ? subject.TeacherId : unassignDOM}</td>`);
                 newRow.append(`<td class="text-truncate">${subject.User != null ? subject.User.Fullname : unassignDOM}</td>`);
                 var tdAction = $(`<td class="text-truncate">`);
-                tdAction.append(`<button class="btn btn-primary btn-sm"><i class="bi bi-person-lines-fill"></i> List grades students</button>`);
                 tdAction.append(`<button class="btn btn-primary mx-2 btn-sm" onClick="ShowModalEdit(${subject.Id});"><i class="bi bi-pencil-square"></i> Edit</button>`);
                 tdAction.append(`<button class="btn btn-danger btn-sm" onClick="DeleteProduct(${subject.Id})"><i class="bi bi-trash"></i> Delete</button>`);
                 newRow.append(tdAction);
                 tbody.append(newRow);
-            }),
-                RenderPaging(pageSize, currentPage);
+            });
+            RenderPaging(pageSize, currentPage);
         },
         complete: function (data) {
             $("#loading").removeClass("loader");
@@ -187,7 +186,9 @@ function RenderPaging(pageSize, currentPage) {
         type: "GET",
         dataType: 'json',
         success: function (listUsers) {
+            // get total items
             totalItems = listUsers["@odata.count"];
+            // get total pages
             totalPages = totalItems % pageSize === 0 ? totalItems / pageSize : Math.floor(totalItems / pageSize + 1);
             // clear Paging DOM
             $(".pagination").empty();
@@ -197,36 +198,33 @@ function RenderPaging(pageSize, currentPage) {
                 var ul = $(".pagination");
                 // <li> Previoue DOM
                 var liPre = "";
-                if (currentPage === 1) {
-                    // <li> disabled
-                    liPre = $(`<li class="page-item disabled"></li>`);
-                } else {
-                    // <li> enabled
-                    liPre = $(`<li class="page-item"></li>`);
-                }
+                // <li> disabled
+                if (currentPage === 1) liPre = $(`<li class="page-item disabled"></li>`);
+                // <li> enabled
+                else liPre = $(`<li class="page-item"></li>`);
+                // append <li> to <ul>
                 liPre.append(`<button class="page-link" aria-label="Previous" onClick="RenderSubjects(${pageSize},${currentPage - 1});"><span aria-hidden="true">&laquo;</span></button>`);
                 ul.append(liPre);
 
                 // <li> Page DOM
+                var liPage = "";
                 for (var i = 1; i <= totalPages; i++) {
-                    if (i === currentPage) {
-                        // <li> Active
-                        ul.append(`<li class="page-item active"><button class="page-link" onClick="RenderSubjects(${pageSize},${i});">${i}</button></li>`);
-                    } else {
-                        // <li> Inactive
-                        ul.append(`<li class="page-item"><button class="page-link" onClick="RenderSubjects(${pageSize},${i});">${i}</button></li>`);
-                    }
+                    // <li> Active
+                    if (i === currentPage) liPage = $(`<li class="page-item active"></li>`);
+                    // <li> Inactive
+                    else liPage = $(`<li class="page-item"></li>`);
+                    // append <li> to <ul>
+                    liPage.append(`<button class="page-link" onClick="RenderSubjects(${pageSize},${i});">${i}</button>`);
+                    ul.append(liPage);
                 }
 
                 // <li> Next DOM
                 var liNext = "";
-                if (currentPage === totalPages) {
-                    // <li> disabled
-                    liNext = $(`<li class="page-item disabled"></li>`);
-                } else {
-                    // <li> enabled
-                    liNext = $(`<li class="page-item"></li>`);
-                }
+                // <li> disabled
+                if (currentPage === totalPages) liNext = $(`<li class="page-item disabled"></li>`);
+                // <li> enabled
+                else liNext = $(`<li class="page-item"></li>`);
+                // append <li> to <ul>
                 liNext.append(`<button class="page-link" aria-label="Next" onClick="RenderSubjects(${pageSize},${currentPage + 1});"><span aria-hidden="true">&raquo;</span></button>`);
                 ul.append(liNext);
             }

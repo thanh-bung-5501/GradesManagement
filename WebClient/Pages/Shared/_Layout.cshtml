@@ -37,8 +37,9 @@
                             </div>
 
                             <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                <a class="dropdown-item" asp-area="" asp-page="/Manager/ListUsers">ListUsers</a>
-                                <a class="dropdown-item" asp-area="" asp-page="/Manager/ListSubjects">ListSubjects</a>
+                                <a class="dropdown-item" asp-area="" asp-page="/Admin/ListUsers">List Users</a>
+                                <a class="dropdown-item" asp-area="" asp-page="/Admin/ListSubjects">List Subjects</a>
+                                <a class="dropdown-item" asp-area="" asp-page="/Admin/ListGrades">List Grades</a>
                             </div>
                         </div>
                     </div>
@@ -62,7 +63,7 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js" asp-append-version="true"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>

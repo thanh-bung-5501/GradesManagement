@@ -5,7 +5,6 @@
     ViewData["Title"] = "List Users";
 }
 
-
 <div class="d-flex justify-content-between">
     <h3>List Users</h3>
     <div class="d-flex align-items-end">
@@ -29,7 +28,7 @@
             <div class="modal-body">
                 <label class="col-form-label-sm">Fullname</label>
                 <input id="add-uname" class="form-control form-control-sm" type="text" />
-                
+
                 <label class="col-form-label-sm">Email</label>
                 <input id="add-uemail" class="form-control form-control-sm" type="text" />
 
@@ -37,14 +36,14 @@
                 <div class="d-flex">
                     <input id="add-upw" class="form-control form-control-sm" type="password" />
                     <i id="eye-password" class="bi bi-eye"></i>
-                </div> 
+                </div>
 
                 <label class="col-form-label-sm">Confirm password</label>
                 <div class="d-flex">
                     <input id="confirm-upw" class="form-control form-control-sm" type="password" />
                     <i id="confirm-eye-password" class="bi bi-eye"></i>
                 </div>
-                
+
                 <label class="col-form-label-sm">Phone</label>
                 <input id="add-uphone" class="form-control form-control-sm" type="number" />
 
@@ -101,7 +100,7 @@
                 <div class="d-flex">
                     <input id="edit-upw" class="form-control form-control-sm" type="password" />
                     <i id="edit-eye-password" class="bi bi-eye"></i>
-                </div> 
+                </div>
 
                 <label class="col-form-label-sm">Phone</label>
                 <input id="edit-uphone" class="form-control form-control-sm" type="number" />
@@ -189,7 +188,6 @@
     <div class="mx-2">
         <select id="select-page-size" class="form-select form-select-sm">
             <optgroup id="select-optgroup" label="Page sizes">
-
             </optgroup>
         </select>
     </div>
@@ -200,6 +198,6 @@
     </nav>
 </div>
 
-<script src="~/lib/jquery/dist/jquery.min.js"></script>
-<script src="~/lib/jquery/dist/jquery.js"></script>
-<script src="~/js/manager/listusers.js" asp-append-version="true"></script>
+@section scripts{
+    <script src="~/js/admin/listusers.js"></script>
+}

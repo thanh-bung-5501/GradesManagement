@@ -5,15 +5,18 @@ var totalItems = 0;
 var totalPages = 0;
 
 $(function () {
+    // render users view
     RenderUsers(pageSizeRaw, currentPageRaw);
-    RenderPageSize();
 
+    // catch events input password
+    EyePasswordEvent();
+
+    // select page size event
     $("#select-page-size").on("change", function () {
         RenderUsers($("#select-page-size").val(), 1);
     });
 
-    EyePasswordHandle();
-
+    // click btn add event
     $("#btn-add-user").on("click", function () {
         // clear items
         $('#add-uname').val(null);
@@ -24,43 +27,36 @@ $(function () {
         $('#add-uaddress').val(null);
         $('#add-urole').val(2);
         $('#add-ustatus').val(1);
-
         // show modal
         $("#add-user-modal").modal("show");
     });
+
+    // render page size view
+    RenderPageSize();
 });
 
-function EyePasswordHandle() {
+function EyePasswordHandle(selector) {
+    var fieldType = $(selector).attr('type');
+    if (fieldType === 'text') {
+        $(selector).attr('type', 'password');
+    } else if (fieldType === 'password') {
+        $(selector).attr('type', 'text');
+    }
+}
+
+function EyePasswordEvent() {
     $("#eye-password").on("click", function () {
-        var fieldType = $('#add-upw').attr('type');
-        if (fieldType === 'text') {
-            $('#add-upw').attr('type', 'password');
-        } else if (fieldType === 'password') {
-            $('#add-upw').attr('type', 'text');
-        }
+        EyePasswordHandle('#add-upw');
     });
-
     $("#confirm-eye-password").on("click", function () {
-        var fieldType = $('#confirm-upw').attr('type');
-        if (fieldType === 'text') {
-            $('#confirm-upw').attr('type', 'password');
-        } else if (fieldType === 'password') {
-            $('#confirm-upw').attr('type', 'text');
-        }
+        EyePasswordHandle('#confirm-upw');
     });
-
     $("#edit-eye-password").on("click", function () {
-        var fieldType = $('#edit-upw').attr('type');
-        if (fieldType === 'text') {
-            $('#edit-upw').attr('type', 'password');
-        } else if (fieldType === 'password') {
-            $('#edit-upw').attr('type', 'text');
-        }
+        EyePasswordHandle('#edit-upw');
     });
 }
 
 function RenderUsers(pageSize, currentPage) {
-
     var skipCount = (currentPage - 1) * pageSize;
     var query = "&$top=" + pageSize + "&$skip=" + skipCount;
 
@@ -72,7 +68,6 @@ function RenderUsers(pageSize, currentPage) {
             $("#loading").addClass("loader");
         },
         success: function (listUsers) {
-
             // Create view data users
             $("#table-body").empty();
             $.each(listUsers.value, function (index, user) {
@@ -99,7 +94,6 @@ function RenderUsers(pageSize, currentPage) {
                 newRow.append(tdAction);
                 tbody.append(newRow);
             });
-
             // show paging
             RenderPaging(pageSize, currentPage);
         },
@@ -115,7 +109,9 @@ function RenderPaging(pageSize, currentPage) {
         type: "GET",
         dataType: 'json',
         success: function (listUsers) {
+            // get total items
             totalItems = listUsers["@odata.count"];
+            // get total pages
             totalPages = totalItems % pageSize === 0 ? totalItems / pageSize : Math.floor(totalItems / pageSize + 1);
             // clear Paging DOM
             $(".pagination").empty();
@@ -125,36 +121,33 @@ function RenderPaging(pageSize, currentPage) {
                 var ul = $(".pagination");
                 // <li> Previoue DOM
                 var liPre = "";
-                if (currentPage === 1) {
-                    // <li> disabled
-                    liPre = $(`<li class="page-item disabled"></li>`);
-                } else {
-                    // <li> enabled
-                    liPre = $(`<li class="page-item"></li>`);
-                }
+                // <li> disabled
+                if (currentPage === 1) liPre = $(`<li class="page-item disabled"></li>`);
+                // <li> enabled
+                else liPre = $(`<li class="page-item"></li>`);
+                // append <li> to <ul>
                 liPre.append(`<button class="page-link" aria-label="Previous" onClick="RenderUsers(${pageSize},${currentPage - 1});"><span aria-hidden="true">&laquo;</span></button>`);
                 ul.append(liPre);
 
                 // <li> Page DOM
+                var liPage = "";
                 for (var i = 1; i <= totalPages; i++) {
-                    if (i === currentPage) {
-                        // <li> Active
-                        ul.append(`<li class="page-item active"><button class="page-link" onClick="RenderUsers(${pageSize},${i});">${i}</button></li>`);
-                    } else {
-                        // <li> Inactive
-                        ul.append(`<li class="page-item"><button class="page-link" onClick="RenderUsers(${pageSize},${i});">${i}</button></li>`);
-                    }
+                    // <li> Active
+                    if (i === currentPage) liPage = $(`<li class="page-item active"></li>`);
+                    // <li> Inactive
+                    else liPage = $(`<li class="page-item"></li>`);
+                    // append <li> to <ul>
+                    liPage.append(`<button class="page-link" onClick="RenderUsers(${pageSize},${i});">${i}</button>`);
+                    ul.append(liPage);
                 }
 
                 // <li> Next DOM
                 var liNext = "";
-                if (currentPage === totalPages) {
-                    // <li> disabled
-                    liNext = $(`<li class="page-item disabled"></li>`);
-                } else {
-                    // <li> enabled
-                    liNext = $(`<li class="page-item"></li>`);
-                }
+                // <li> disabled
+                if (currentPage === totalPages) liNext = $(`<li class="page-item disabled"></li>`);
+                // <li> enabled
+                else liNext = $(`<li class="page-item"></li>`);
+                // append <li> to <ul>
                 liNext.append(`<button class="page-link" aria-label="Next" onClick="RenderUsers(${pageSize},${currentPage + 1});"><span aria-hidden="true">&raquo;</span></button>`);
                 ul.append(liNext);
             }
@@ -176,6 +169,7 @@ function ShowModalEdit(id) {
         contentType: "application/json; charset=utf-8",
         dataType: "json",
         success: function (result, status, xhr) {
+            // set data to view
             $('#edit-id').val(result.Id);
             $('#edit-uname').val(result.Fullname);
             $('#edit-uemail').val(result.Email);
@@ -184,7 +178,7 @@ function ShowModalEdit(id) {
             $('#edit-uaddress').val(result.Address);
             $('#edit-urole').val(result.RoleId);
             $('#edit-ustatus').val(result.Status);
-
+            // show modal
             $('#edit-user-modal').modal('show');
         },
         error: function (xhr, status, error) {

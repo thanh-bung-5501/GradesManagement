@@ -1,0 +1,147 @@
+﻿@page
+@model WebClient.Pages.Manager.ListGradesModel
+
+@{
+    ViewData["Title"] = "List Grades";
+}
+
+<div class="d-flex justify-content-between">
+    <h3>List Grades</h3>
+    <div class="d-flex align-items-end">
+        <button id="btn-add-grade" class="btn btn-primary btn-sm"><i class="bi bi-plus-square"></i> Add Grade</button>
+        <button class="btn btn-primary btn-sm mx-2"><i class="bi bi-download"></i> Download template</button>
+        <button class="btn btn-primary btn-sm"><i class="bi bi-upload"></i> Import Grades</button>
+        <button class="btn btn-primary btn-sm" style="margin-left: 8px"><i class="bi bi-download"></i> Export Grades</button>
+    </div>
+</div>
+
+@*
+    Modal Add Grade
+*@
+<div class="modal" id="add-modal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-person-fill-add"></i> Add Grade</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                @*Select search StudentId*@
+                <label class="col-form-label-sm">Student</label>
+                <select id="add-student-id" style="width: 100%"></select>
+                <div id="add-student-details"></div>
+                @*Select search SubjectCode*@
+                <label class="col-form-label-sm">Subject</label>
+                <select id="add-subject-id" style="width: 100%"></select>
+                <div id="add-subject-details"></div>
+                @*Select GradeCategory*@
+                <label class="col-form-label-sm">GradeCategory</label>
+                <select id="add-grade-category-id" style="width: 100%"></select>
+                @*Input Grade*@
+                <label class="col-form-label-sm">Grade</label>
+                <input id="add-grade" class="form-control form-control-sm" type="number" />
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary btn-sm" onclick=""><i class="bi bi-save"></i> Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+@*
+    Modal Edit Grade
+*@
+<div class="modal" id="edit-modal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-pencil-square"></i> Edit</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                @*Select search StudentId*@
+                <label class="col-form-label-sm">Student</label>
+                <select id="edit-student-id" style="width: 100%"></select>
+                <div id="edit-student-details"></div>
+                @*Select search SubjectCode*@
+                <label class="col-form-label-sm">Subject</label>
+                <select id="edit-subject-id" style="width: 100%"></select>
+                <div id="edit-subject-details"></div>
+                @*Select GradeCategory*@
+                <label class="col-form-label-sm">GradeCategory</label>
+                <select id="edit-grade-category-id" style="width: 100%"></select>
+                @*Input Grade*@
+                <label class="col-form-label-sm">Grade</label>
+                <input id="edit-grade" class="form-control form-control-sm" type="number" />
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary btn-sm" onclick=""><i class="bi bi-save"></i> Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@*List Grades By SubjectId*@
+<table class="table table-bordered table-striped mt-2 table-responsive">
+    <thead class="bg-info bg-gradient bg-opacity-75">
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">
+                StudentId<br />
+                <input id="search-sub-code" class="form-control form-control-sm" type="text" />
+            </th>
+            <th scope="col">
+                SubjectCode<br />
+                <input id="search-sub-name" class="form-control form-control-sm" type="text" />
+            </th>
+            <th scope="col">
+                GradeCategory<br />
+                <input id="search-teacher-id" class="form-control form-control-sm" type="text" />
+            </th>
+            <th scope="col">
+                Grade<br />
+                <input id="search-teacher-name" class="form-control form-control-sm" type="text" />
+            </th>
+            <th scope="col">
+                CreatedOn<br />
+                <input id="search-teacher-name" class="form-control form-control-sm" type="text" />
+            </th>
+            <th scope="col">
+                ModifiedOn<br />
+                <input id="search-teacher-name" class="form-control form-control-sm" type="text" />
+            </th>
+            <th scope="col">
+                CreatedBy<br />
+                <input id="search-teacher-name" class="form-control form-control-sm" type="text" />
+            </th>
+            <th scope="col">
+                ModifiedBy<br />
+                <input id="search-teacher-name" class="form-control form-control-sm" type="text" />
+            </th>
+            <th scope="col">Action</th>
+        </tr>
+    </thead>
+    <tbody id="table-body">
+    </tbody>
+</table>
+@* Loading ajax*@
+<div id="loading"></div>
+@*Page size*@
+<div class="d-flex justify-content-end">
+    <div class="mx-2">
+        <select id="select-page-size" class="form-select form-select-sm">
+            <optgroup id="select-optgroup" label="Page sizes">
+            </optgroup>
+        </select>
+    </div>
+
+    <nav aria-label="Page navigation">
+        <ul class="pagination pagination-sm">
+        </ul>
+    </nav>
+</div>
+
+@section scripts{
+    <script src="~/js/admin/listgrades.js"></script>
+}

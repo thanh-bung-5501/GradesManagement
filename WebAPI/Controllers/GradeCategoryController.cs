@@ -7,11 +7,11 @@ using WebAPI.Models;
 
 namespace WebAPI.Controllers
 {
-    public class GradesController : ODataController
+    public class GradeCategoryController : ODataController
     {
-        private IGradeRepo _repo = new GradesRepo();
+        private IGradeCategoryRepo _repo = new GradeCategoriyRepo();
         private IMapper _Mapper { get; }
-        public GradesController(IMapper mapper)
+        public GradeCategoryController(IMapper mapper)
         {
             _Mapper = mapper;
         }
@@ -19,9 +19,9 @@ namespace WebAPI.Controllers
         [EnableQuery]
         public IActionResult Get()
         {
-            var grades = _repo.GetGrades();
-            var gradeDTOs = _Mapper.Map<List<GradesDTO>>(grades);
-            return Ok(gradeDTOs);
+            var gradeCategories = _repo.GetGradeCategories();
+            var gradeCategoryDTOs = _Mapper.Map<List<GradeCategoryDTO>>(gradeCategories);
+            return Ok(gradeCategoryDTOs);
         }
     }
 }

@@ -61,3 +61,10 @@ body {
     font-size: 30px;
     cursor: pointer;
 }
+
+.disabled{
+    cursor: no-drop;
+}
+.table {
+    font-size: 14px;
+}

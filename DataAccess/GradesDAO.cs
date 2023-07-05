@@ -10,8 +10,13 @@ namespace DataAccess
         {
             _context = context;
         }
-        public static List<Grades> GetGrades() => _context.Grades.Include(x => x.User).ToList();
-
-        public static Subject GetSubjectById(int id) => _context.Subject.SingleOrDefault(x => x.Id == id)!;
+        public static List<Grades> GetGrades()
+        {
+            var rs = _context.Grades.Include(x => x.GradeCategory)
+                .Include(x => x.User)
+                .Include(x => x.Subject)
+                .ToList();
+            return rs;
+        }
     }
 }

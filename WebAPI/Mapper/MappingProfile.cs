@@ -9,6 +9,8 @@ namespace WebAPI.Mapper
         public MappingProfile()
         {
             CreateMap<User, UserDTO>().ReverseMap();
+            CreateMap<UserCreateDTO, User>().ReverseMap();
+
             CreateMap<Role, RoleDTO>().ReverseMap();
             CreateMap<Subject, SubjectDTO>().ReverseMap();
             CreateMap<Grades, GradesDTO>();

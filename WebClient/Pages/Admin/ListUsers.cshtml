@@ -4,74 +4,177 @@
 @{
     ViewData["Title"] = "List Users";
 }
+<h3>List Users</h3>
 
-<div class="d-flex justify-content-between">
-    <h3>List Users</h3>
-    <div class="d-flex align-items-end">
+<div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 999">
+    <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header justify-content-between">
+            @*toast-title*@
+            <div id="toast-title">
+            </div>
+            <div class="d-flex align-content-center">
+                <small>now</small>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+        @*toast-body*@
+        <div id="toast-body" class="toast-body">
+        </div>
+    </div>
+</div>
+
+<div class="row justify-content-between">
+    <div class="d-flex col-lg-7 col-md-12 mb-2">
+        <input id="search" class="form-control form-control-sm" type="search" placeholder="Search" aria-label="Search">
+        <div class="input-group input-group-sm mx-2">
+            <label class="input-group-text" for="select-role">Role</label>
+            <select class="form-select form-select-sm" id="select-role">
+                <option value="">all roles</option>
+                <option value="1">admin</option>
+                <option value="2">teacher</option>
+                <option value="3">student</option>
+            </select>
+        </div>
+        <div class="input-group input-group-sm">
+            <label class="input-group-text" for="select-status">Status</label>
+            <select class="form-select form-select-sm" id="select-status">
+                <option value="">all status</option>
+                <option value="0">block</option>
+                <option value="1">active</option>
+            </select>
+        </div>
+        <button id="btn-search" class="btn btn-outline-primary btn-sm mx-2 d-flex">
+            <i class="bi bi-search"></i>&nbsp;Search
+        </button>
+        <a class="btn btn-outline-primary btn-sm d-flex" href="">
+            <i class="bi bi-arrow-repeat"></i>&nbsp;Reset
+        </a>
+    </div>
+
+    <div class="d-flex justify-content-end col-lg-5 col-md-12 mb-2">
         <button id="btn-add-user" class="btn btn-primary btn-sm"><i class="bi bi-plus-square"></i> Add User</button>
-        <button class="btn btn-primary btn-sm mx-2"><i class="bi bi-download"></i> Download template</button>
-        <button class="btn btn-primary btn-sm"><i class="bi bi-upload"></i> Import Users</button>
-        <button class="btn btn-primary btn-sm" style="margin-left: 8px"><i class="bi bi-download"></i> Export Users</button>
+        <button class="btn btn-primary btn-sm mx-2" id="download-template"><i class="bi bi-download"></i> Download template</button>
+        <button class="btn btn-primary btn-sm" id="btn-import-users"><i class="bi bi-upload"></i> Import Users</button>
+        <button class="btn btn-primary btn-sm" style="margin-left: 8px" id="export-users"><i class="bi bi-download"></i> Export Users</button>
+    </div>
+</div>
+
+@*
+    Modal Import Users
+*@
+<div class="modal fade" id="modal-import-users" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form id="form-import-users" method="post" enctype="multipart/form-data">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="staticBackdropLabel"><i class="bi bi-upload"></i> Import users</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="formFileSm" class="form-label">File input (.xlsx)</label>
+                        <input class="form-control form-control-sm" id="formFileSm" name="file" type="file" accept=".xlsx">
+                    </div>
+                    <div id="show-error" class="text-danger"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 
 @*
     Modal AddUser
 *@
-<div class="modal" id="add-user-modal" tabindex="-1">
+<div class="modal" id="add-user-modal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title"><i class="bi bi-person-fill-add"></i> Add User</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <label class="col-form-label-sm">Fullname</label>
-                <input id="add-uname" class="form-control form-control-sm" type="text" />
-
-                <label class="col-form-label-sm">Email</label>
-                <input id="add-uemail" class="form-control form-control-sm" type="text" />
-
-                <label class="col-form-label-sm">Password</label>
-                <div class="d-flex">
-                    <input id="add-upw" class="form-control form-control-sm" type="password" />
-                    <i id="eye-password" class="bi bi-eye"></i>
+            <form id="myForm" method="POST">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-person-fill-add"></i> Add User</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
 
-                <label class="col-form-label-sm">Confirm password</label>
-                <div class="d-flex">
-                    <input id="confirm-upw" class="form-control form-control-sm" type="password" />
-                    <i id="confirm-eye-password" class="bi bi-eye"></i>
+                <div class="modal-body row">
+                    <div class="col-lg-6">
+
+                        <div>
+                            <label class="col-form-label-sm">Fullname</label>
+                            <input id="add-uname" class="form-control form-control-sm" type="text" required />
+                            <span class="text-danger small"></span>
+                        </div>
+
+                        <div>
+                            <label class="col-form-label-sm">Email</label>
+                            <input id="add-uemail" class="form-control form-control-sm" type="text" required />
+                            <span class="text-danger small"></span>
+                        </div>
+
+                        <div>
+                            <label class="col-form-label-sm">Password</label>
+                            <div class="d-flex">
+                                <input id="add-upw" class="form-control form-control-sm" type="password" required />
+                                <i id="eye-password" class="bi bi-eye"></i>
+                            </div>
+                            <span class="text-danger small"></span>
+                        </div>
+
+                        <div>
+                            <label class="col-form-label-sm">Confirm password</label>
+                            <div class="d-flex">
+                                <input id="confirm-upw" class="form-control form-control-sm" type="password" required />
+                                <i id="confirm-eye-password" class="bi bi-eye"></i>
+                            </div>
+                            <span class="text-danger small"></span>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div>
+                            <label class="col-form-label-sm">Phone</label>
+                            <input id="add-uphone" class="form-control form-control-sm" type="number" required />
+                            <span class="text-danger small"></span>
+                        </div>
+
+                        <div>
+                            <label class="col-form-label-sm">Address</label>
+                            <input id="add-uaddress" class="form-control form-control-sm" type="text" required />
+                            <span class="text-danger small"></span>
+                        </div>
+
+                        <div>
+                            <label class="col-form-label-sm">Role</label>
+                            <select id="add-urole" class="form-select form-select-sm">
+                                <optgroup label="choose role">
+                                    <option value="1">admin</option>
+                                    <option value="2" selected>teacher</option>
+                                    <option value="3">student</option>
+                                </optgroup>
+                            </select>
+                            <span class="text-danger small"></span>
+                        </div>
+
+                        <div>
+                            <label class="col-form-label-sm">Status</label>
+                            <select id="add-ustatus" class="form-select form-select-sm">
+                                <optgroup label="choose status">
+                                    <option value="0">active</option>
+                                    <option value="1" selected>block</option>
+                                </optgroup>
+                            </select>
+                            <span class="text-danger small"></span>
+                        </div>
+                    </div>
+
                 </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="ModalAddSubmitForm();"><i class="bi bi-save"></i> Save</button>
+                </div>
+            </form>
 
-                <label class="col-form-label-sm">Phone</label>
-                <input id="add-uphone" class="form-control form-control-sm" type="number" />
-
-                <label class="col-form-label-sm">Address</label>
-                <input id="add-uaddress" class="form-control form-control-sm" type="text" />
-
-                <label class="col-form-label-sm">Role</label>
-                <select id="add-urole" class="form-select form-select-sm">
-                    <optgroup label="choose role">
-                        <option value="1">admin</option>
-                        <option value="2" selected>teacher</option>
-                        <option value="3">student</option>
-                    </optgroup>
-                </select>
-
-                <label class="col-form-label-sm">Status</label>
-                <select id="add-ustatus" class="form-select form-select-sm">
-                    <optgroup label="choose status">
-                        <option value="0">active</option>
-                        <option value="1" selected>block</option>
-                    </optgroup>
-                </select>
-
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary btn-sm" onclick=""><i class="bi bi-save"></i> Save</button>
-            </div>
         </div>
     </div>
 </div>
@@ -79,7 +182,7 @@
 @*
     Modal EditUser
 *@
-<div class="modal" id="edit-user-modal" tabindex="-2">
+<div class="modal" id="edit-user-modal" tabindex="-2" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -134,47 +237,17 @@
     </div>
 </div>
 
-<table class="table table-bordered table-striped mt-2 table-responsive">
-    <thead class="bg-info bg-gradient bg-opacity-75">
+<table id="table" class="table table-sm table-bordered table-striped mt-2 table-responsive">
+    <thead class="bg-primary text-white">
         <tr>
             <th scope="col">#</th>
-            <th scope="col">
-                UserId<br />
-                <input id="search-uid" class="form-control form-control-sm" type="text" />
-            </th>
-            <th scope="col">
-                Fullname<br />
-                <input id="search-uname" class="form-control form-control-sm" type="text" />
-            </th>
-            <th scope="col">
-                Email<br />
-                <input id="search-uemail" class="form-control form-control-sm" type="text" />
-            </th>
-            <th scope="col">
-                Phone<br />
-                <input id="search-uphone" class="form-control form-control-sm" type="text" />
-            </th>
-            <th scope="col">
-                Address<br />
-                <input id="search-uaddress" class="form-control form-control-sm" type="text" />
-            </th>
-            <th scope="col">
-                Role<br />
-                <select id="select-role" class="form-select form-select-sm">
-                    <option value="" selected>all role</option>
-                    <option>admin</option>
-                    <option>teacher</option>
-                    <option>student</option>
-                </select>
-            </th>
-            <th scope="col">
-                Status<br />
-                <select id="select-status" class="form-select form-select-sm">
-                    <option value="" selected>all status</option>
-                    <option>active</option>
-                    <option>block</option>
-                </select>
-            </th>
+            <th scope="col">UserId</th>
+            <th scope="col">Fullname</th>
+            <th scope="col">Email</th>
+            <th scope="col">Phone</th>
+            <th scope="col">Address</th>
+            <th scope="col">Role</th>
+            <th scope="col">Status</th>
             <th scope="col">Action</th>
         </tr>
     </thead>
@@ -182,10 +255,10 @@
     </tbody>
 </table>
 
-<div id="loading"></div>
+<div id="show-result"></div>
 
-<div class="d-flex justify-content-end">
-    <div class="mx-2">
+<div class="d-flex justify-content-between">
+    <div id="page-size">
         <select id="select-page-size" class="form-select form-select-sm">
             <optgroup id="select-optgroup" label="Page sizes">
             </optgroup>
@@ -197,6 +270,8 @@
         </ul>
     </nav>
 </div>
+
+<div class="modal-loading"></div>
 
 @section scripts{
     <script src="~/js/admin/listusers.js"></script>

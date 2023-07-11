@@ -37,16 +37,6 @@ body {
     cursor: pointer;
 }
 
-.loader {
-    margin: auto;
-    border: 20px solid #EAF0F6;
-    border-radius: 50%;
-    border-top: 20px solid #FF7A59;
-    width: 100px;
-    height: 100px;
-    animation: spinner 4s linear infinite;
-}
-
 @keyframes spinner {
     0% {
         transform: rotate(0deg);
@@ -57,14 +47,47 @@ body {
     }
 }
 
-.icon-sort{
+.icon-sort {
     font-size: 30px;
     cursor: pointer;
 }
 
-.disabled{
+.disabled {
     cursor: no-drop;
 }
+
 .table {
-    font-size: 14px;
+    font-size: 15px;
+}
+
+.dot {
+    height: 10px;
+    width: 10px;
+    border-radius: 50%;
+    display: inline-block;
+}
+/*
+    modal-loading
+*/
+.modal-loading {
+    display: none;
+    position: fixed;
+    z-index: 99999;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    background: rgba( 255, 255, 255, .8 ) url('../images/loading.gif') 50% 50% no-repeat;
+}
+
+/* When the body has the loading class, we turn
+   the scrollbar off with overflow:hidden */
+body.loading .modal-loading {
+    overflow: hidden;
+}
+
+/* Anytime the body has the loading class, our
+   modal element will be visible */
+body.loading .modal-loading {
+    display: block;
 }

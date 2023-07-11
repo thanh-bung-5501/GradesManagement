@@ -19,6 +19,12 @@ namespace DataAccess
         {
             _context.User.Add(user);
             _context.SaveChanges();
+        }        
+        
+        public static void BulkCreate(List<User> users)
+        {
+            _context.User.AddRange(users);
+            _context.SaveChanges();
         }
 
         public static void Update(User x)

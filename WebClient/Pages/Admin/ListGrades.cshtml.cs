@@ -4,5 +4,6 @@ namespace WebClient.Pages.Manager
 {
     public class ListGradesModel : PageModel
     {
+
     }
 }

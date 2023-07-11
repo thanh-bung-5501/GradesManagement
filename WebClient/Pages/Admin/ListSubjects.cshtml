@@ -5,9 +5,19 @@
     ViewData["Title"] = "List Subjects";
 }
 
-<div class="d-flex justify-content-between">
-    <h3>List Subjects</h3>
-    <div class="d-flex align-items-end">
+<h3>List Subjects</h3>
+
+<div class="row justify-content-between">
+    <div class="d-flex col-lg-5 col-md-12 mb-2">
+        <input id="search" class="form-control form-control-sm" type="search" placeholder="Search" aria-label="Search">
+        <button id="btn-search" class="btn btn-outline-primary btn-sm mx-2 d-flex">
+            <i class="bi bi-search"></i>&nbsp;Search
+        </button>
+        <a class="btn btn-outline-primary btn-sm d-flex" href="">
+            <i class="bi bi-arrow-repeat"></i>&nbsp;Reset
+        </a>
+    </div>
+    <div class="d-flex justify-content-end col-lg-5 col-md-12 mb-2">
         <button id="btn-add-subject" class="btn btn-primary btn-sm"><i class="bi bi-plus-square"></i> Add Subject</button>
     </div>
 </div>
@@ -15,7 +25,7 @@
 @*
     Modal AddSubject
 *@
-<div class="modal" id="add-subject-modal" tabindex="-1">
+<div class="modal" id="add-subject-modal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -45,7 +55,7 @@
 @*
     Modal EditSubject
 *@
-<div class="modal" id="edit-subject-modal" tabindex="-1">
+<div class="modal" id="edit-subject-modal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -75,27 +85,15 @@
     </div>
 </div>
 
-<table class="table table-bordered table-striped mt-2 table-responsive">
-    <thead class="bg-info bg-gradient bg-opacity-75">
+<table id="table" class="table table-bordered table-striped mt-2 table-responsive">
+    <thead class="bg-primary text-white">
         <tr>
             <th scope="col">#</th>
             <th scope="col">SubjectId</th>
-            <th scope="col">
-                SubjectCode<br />
-                <input id="search-sub-code" class="form-control form-control-sm" type="text" />
-            </th>
-            <th scope="col">
-                SubjectName<br />
-                <input id="search-sub-name" class="form-control form-control-sm" type="text" />
-            </th>
-            <th scope="col">
-                TeacherId<br />
-                <input id="search-teacher-id" class="form-control form-control-sm" type="text" />
-            </th>
-            <th scope="col">
-                TeacherName<br />
-                <input id="search-teacher-name" class="form-control form-control-sm" type="text" />
-            </th>
+            <th scope="col">SubjectCode</th>
+            <th scope="col">SubjectName</th>
+            <th scope="col">TeacherId</th>
+            <th scope="col">TeacherName</th>
             <th scope="col">Action</th>
         </tr>
     </thead>
@@ -103,10 +101,10 @@
     </tbody>
 </table>
 
-<div id="loading"></div>
+<div id="show-result"></div>
 
-<div class="d-flex justify-content-end">
-    <div class="mx-2">
+<div class="d-flex justify-content-between">
+    <div id="page-size">
         <select id="select-page-size" class="form-select form-select-sm">
             <optgroup id="select-optgroup" label="Page sizes">
             </optgroup>
@@ -118,6 +116,9 @@
         </ul>
     </nav>
 </div>
+
+@* Loading ajax*@
+<div class="modal-loading"></div>
 
 @section scripts{
     <script src="~/js/Admin/ListSubjects.js"></script>

@@ -1,7 +1,9 @@
 ﻿namespace WebAPI.Models
 {
-    public class UseCreateDTO
+    public class UserCreateDTO
     {
+        public string? Id { get; set; }
+
         public string Fullname { get; set; }
 
         public string Email { get; set; }

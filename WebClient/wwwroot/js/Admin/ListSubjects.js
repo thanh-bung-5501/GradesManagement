@@ -1,12 +1,14 @@
 ﻿// Global variables for pagination
-var pageSizeRaw = 10;
-var currentPageRaw = 1;
-var totalItems = 0;
-var totalPages = 0;
+var pageSizeRaw = 10, currentPageRaw = 1, totalItems = 0, totalPages = 0;
+
+$(document).on({
+    ajaxStart: function () { $("body").addClass("loading"); },
+    ajaxStop: function () { $("body").removeClass("loading"); }
+});
 
 $(function () {
+    // render users view
     RenderSubjects(pageSizeRaw, currentPageRaw);
-    RenderPageSize();
 
     $("#select-page-size").on("change", function () {
         RenderSubjects($("#select-page-size").val(), 1);
@@ -27,6 +29,13 @@ $(function () {
         // <div id="add-teacher-details"></div>
         ShowTeacherInfor("#edit-teacher-details", teacherId);
     });
+
+    $('#btn-search').on('click', function () {
+        RenderSubjects($('#select-page-size').val(), 1);
+    });
+
+    // render page size view
+    RenderPageSize();
 });
 
 function ShowTeacherInfor(selector, id) {
@@ -108,7 +117,7 @@ function ShowModalEdit(id) {
 
                     //Load select listTeachers
                     $.each(teachers.value, function (index, teacher) {
-                        $('#edit-teacher-id').append(`<option value="${teacher.Id}" >${teacher.Id}-${teacher.Fullname}</option>`);
+                        $('#edit-teacher-id').append(`<option value="${teacher.Id}" >${teacher.Fullname}</option>`);
                     });
 
                     //select search
@@ -142,17 +151,25 @@ function ShowModalEdit(id) {
 }
 
 function RenderSubjects(pageSize, currentPage) {
-
+    // paging
     var skipCount = (currentPage - 1) * pageSize;
     var query = "&$top=" + pageSize + "&$skip=" + skipCount;
+
+    // filter select
+    var filter = '&$filter=';
+    var search = $('#search').val();
+    // if have search
+    if (search !== '') {
+        filter += `contains(code,'${search}') or contains(name,'${search}') or contains(teacherid, '${search}') or contains(user/fullname,'${search}')`;
+    }
+
+    // if have filter
+    if (filter !== '&$filter=') query += filter;
 
     $.ajax({
         url: `https://localhost:5000/odata/subject?$expand=user` + query,
         type: "GET",
         dataType: 'json',
-        beforeSend: function () {
-            $("#loading").addClass("loader");
-        },
         success: function (listSubjects) {
             // Create view data users
             $("#table-body").empty();
@@ -172,22 +189,37 @@ function RenderSubjects(pageSize, currentPage) {
                 newRow.append(tdAction);
                 tbody.append(newRow);
             });
-            RenderPaging(pageSize, currentPage);
-        },
-        complete: function (data) {
-            $("#loading").removeClass("loader");
+
+            // show paging
+            RenderPaging(pageSize, currentPage, filter);
         }
     });
 }
 
-function RenderPaging(pageSize, currentPage) {
+function RenderPaging(pageSize, currentPage, filter) {
+    var url = `https://localhost:5000/odata/subject?$count=true`;
+    // if have filter
+    if (filter !== '&$filter=') url += filter;
+
     $.ajax({
-        url: `https://localhost:5000/odata/subject?$count=true`,
+        url: url,
         type: "GET",
         dataType: 'json',
-        success: function (listUsers) {
+        success: function (listSubjects) {
             // get total items
-            totalItems = listUsers["@odata.count"];
+            totalItems = listSubjects["@odata.count"];
+
+            // no result found
+            if (totalItems === 0) {
+                $('#table').attr("hidden", true);
+                $('#page-size').hide();
+                $('#show-result').html(`<i>No result found!</i>`);
+            } else {
+                $('#table').attr("hidden", false);
+                $('#page-size').show();
+                $('#show-result').html(``);
+            }
+
             // get total pages
             totalPages = totalItems % pageSize === 0 ? totalItems / pageSize : Math.floor(totalItems / pageSize + 1);
             // clear Paging DOM

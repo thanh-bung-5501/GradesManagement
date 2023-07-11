@@ -1,6 +1,11 @@
 ﻿// Global variables for pagination
 var pageSizeRaw = 10, currentPageRaw = 1, totalItems = 0, totalPages = 0;
 
+$(document).on({
+    ajaxStart: function () { $("body").addClass("loading"); },
+    ajaxStop: function () { $("body").removeClass("loading"); }
+});
+
 $(function () {
     // load data grade
     RenderGrades(pageSizeRaw, currentPageRaw);
@@ -227,9 +232,6 @@ function RenderGrades(pageSize, currentPage) {
         url: `https://localhost:5000/odata/grades?$expand=User,GradeCategory,Subject&count=true` + query,
         type: "GET",
         dataType: 'json',
-        beforeSend: function () {
-            $("#loading").addClass("loader");
-        },
         success: function (listGrades) {
             // Create view data users
             $("#table-body").empty();
@@ -253,9 +255,6 @@ function RenderGrades(pageSize, currentPage) {
             });
             // load paging
             RenderPaging(pageSize, currentPage);
-        },
-        complete: function (data) {
-            $("#loading").removeClass("loader");
         }
     });
 }

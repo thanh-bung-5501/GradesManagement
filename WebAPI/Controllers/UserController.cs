@@ -267,29 +267,26 @@ namespace WebAPI.Controllers
             {
                 return BadRequest(ModelState);
             }
-
             User newUser = _Mapper.Map<User>(userCreate);
             newUser.Id = Guid.NewGuid().ToString();
-
-            //return Ok(newUser);
             _repo.Create(newUser);
             return NoContent();
         }
 
-        //public IActionResult Put([FromODataUri] int key, [FromBody] UserDTO userDTO)
-        //{
-        //    if (!ModelState.IsValid)
-        //    {
-        //        return BadRequest(ModelState);
-        //    }
-        //    if (key != userDTO.Id)
-        //    {
-        //        return BadRequest();
-        //    }
-        //    User newUser = _Mapper.Map<User>(userDTO);
-        //    _repo.Update(newUser);
-        //    return NoContent();
-        //}
+        public IActionResult Put([FromODataUri] string key, [FromBody] UserCreateDTO userDTO)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            if (key != userDTO.Id)
+            {
+                return BadRequest();
+            }
+            User newUser = _Mapper.Map<User>(userDTO);
+            _repo.Update(newUser);
+            return NoContent();
+        }
 
         //public IActionResult Delete([FromODataUri] int key)
         //{

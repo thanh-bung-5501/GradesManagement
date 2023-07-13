@@ -1,5 +1,6 @@
-﻿// Global variables for pagination
-var pageSizeRaw = 10, currentPageRaw = 1, totalItems = 0, totalPages = 0;
+﻿var table = $('table').DataTable({
+    autoWidth: true,
+});
 
 $(document).on({
     ajaxStart: function () { $("body").addClass("loading"); },
@@ -8,15 +9,10 @@ $(document).on({
 
 $(function () {
     // render users view
-    RenderUsers(pageSizeRaw, currentPageRaw);
+    RenderUsers();
 
     // catch events input password
     EyePasswordEvent();
-
-    // select page size event
-    $("#select-page-size").on("change", function () {
-        RenderUsers($("#select-page-size").val(), 1);
-    });
 
     // click btn add event
     $("#btn-add-user").on("click", function () {
@@ -34,10 +30,6 @@ $(function () {
         $("#add-user-modal").modal("show");
     });
 
-    $('#btn-search').on('click', function () {
-        RenderUsers($('#select-page-size').val(), 1);
-    });
-
     $('#export-users').on('click', function () {
         ExportUsers();
     });
@@ -52,7 +44,7 @@ $(function () {
         $('#modal-import-users').modal('show');
     });
 
-    $('#formFileSm').on('change', function () {
+    $('#input-file').on('change', function () {
         $('#show-error').empty();
     });
 
@@ -62,38 +54,10 @@ $(function () {
         ImportUsers(formData);
     });
 
-    // render page size view
-    RenderPageSize();
+    $.fn.dataTable.ext.errMode = function (settings, helpPage, message) {
+        console.log(message);
+    };
 });
-
-function ImportUsers(formData) {
-    $('#show-error').empty();
-    $.ajax({
-        url: 'https://localhost:5000/api/user/import-users', // Replace with your Web API endpoint URL
-        type: 'POST',
-        data: formData,
-        enctype: 'multipart/form-data',
-        processData: false,
-        contentType: false,
-        success: function (response) {
-            // Handle the successful response
-            showToastSuccess('Import users successfully!');
-            $('#modal-import-users').modal('hide');
-        },
-        error: function (xhr) {
-            var error = xhr.responseJSON;
-            if (Array.isArray(error)) {
-                var rs = '';
-                $.each(error, function (err) {
-                    rs += error[err] + "<br/>";
-                });
-                $('#show-error').html(`${rs}`);
-            } else {
-                $('#show-error').html(`${error.message}`);
-            }
-        }
-    });
-}
 
 function showToastSuccess(contentBody) {
     const toast = {
@@ -141,6 +105,36 @@ function Toast({ type, body }) {
         toastBody.html(body);
     }
     toastBootstrap.show();
+}
+
+function ImportUsers(formData) {
+    $('#show-error').empty();
+    $.ajax({
+        url: 'https://localhost:5000/api/user/import-users', // Replace with your Web API endpoint URL
+        type: 'POST',
+        data: formData,
+        enctype: 'multipart/form-data',
+        processData: false,
+        contentType: false,
+        success: function (response) {
+            RenderUsers();
+            // Handle the successful response
+            showToastSuccess('Import users successfully!');
+            $('#modal-import-users').modal('hide');
+        },
+        error: function (xhr) {
+            var error = xhr.responseJSON;
+            if (Array.isArray(error)) {
+                var rs = '';
+                $.each(error, function (err) {
+                    rs += error[err] + "<br/>";
+                });
+                $('#show-error').html(`${rs}`);
+            } else {
+                $('#show-error').html(`${error.message}`);
+            }
+        }
+    });
 }
 
 function ExportUsers() {
@@ -225,159 +219,38 @@ function EyePasswordEvent() {
     });
 }
 
-function RenderUsers(pageSize, currentPage) {
-    // paging
-    var skipCount = (currentPage - 1) * pageSize;
-    var query = "&$top=" + pageSize + "&$skip=" + skipCount;
-
-    // filter select
-    var filter = '&$filter=';
-    var search = $('#search').val();
-    var selectRole = $('#select-role').val();
-    var selectStatus = $('#select-status').val();
-
-    // if have search
-    if (search !== '') {
-        filter += `(contains(id,'${search}') or contains(fullname, '${search}') or contains(email,'${search}') or contains(phone, '${search}') or contains(address, '${search}'))`;
-    }
-
-    // if not select all
-    if (selectRole !== '') {
-        // if last index filter is '='
-        if (filter.slice(-1) === '=') {
-            filter += `roleid eq ${selectRole}`;
-
-        } else {
-            // if last index filter not '='
-            filter += ` and roleid eq ${selectRole}`
-        }
-    }
-
-    // if not select all
-    if (selectStatus !== '') {
-        // if last index filter is '='
-        if (filter.slice(-1) === '=') {
-            filter += `status eq ${selectStatus}`;
-        } else {
-            // if last index filter not '='
-            filter += ` and status eq ${selectStatus}`
-        }
-    }
-
-    // if have filter
-    if (filter !== '&$filter=') query += filter;
-
+function RenderUsers() {
+    table.clear().draw(false);
     $.ajax({
-        url: `https://localhost:5000/odata/User?&$expand=Role` + query,
+        url: `https://localhost:5000/odata/User?&$expand=Role`,
         type: "GET",
         dataType: 'json',
         success: function (listUsers) {
+            var users = listUsers.value;
             // Create view data users
-            $("#table-body").empty();
-            $.each(listUsers.value, function (index, user) {
-                var tbody = $("#table-body");
-                var newRow = $("<tr></tr>");
-                newRow.append(`<td class="text-truncate text-wrap">${index + 1 + pageSize * (currentPage - 1)}</td>`);
-                newRow.append(`<td class="text-truncate text-wrap">${user.Id}</td>`);
-                newRow.append(`<td class="text-truncate text-wrap">${user.Fullname}</td>`);
-                newRow.append(`<td class="text-truncate text-wrap">${user.Email}</td>`);
-                newRow.append(`<td class="text-truncate text-wrap">${user.Phone}</td>`);
-                newRow.append(`<td class="text-truncate text-wrap">${user.Address}</td>`);
-                newRow.append(`<td class="text-truncate text-wrap">${user.Role.Name}</td>`);
-                var userStatus = user.Status;
+            $.each(users, function (index, user) {
+                var status = '';
+                var btnEditDOM = `<button class="btn btn-primary btn-sm" onClick="ShowModalEdit('${user.Id}');"><i class="bi bi-pencil-square"></i> Edit</button>`;
+                var btnDeleteDOM = `<button class="btn btn-danger mx-2 btn-sm" onClick="DeleteProduct(${user.Id})"><i class="bi bi-trash"></i> Delete</button>`;
+
                 // status = 1 => active
-                if (userStatus === 1) {
-                    newRow.append(`<td class="text-truncate"><span class="dot bg-success"></span>active</td>`);
-                } else if (userStatus === 0) {
-                    // staus = 0 => block
-                    newRow.append(`<td class="text-truncate"><span class="dot bg-danger"></span>block</td>`);
-                }
-                var tdAction = $(`<td class="text-truncate">`);
-                tdAction.append(`<button class="btn btn-primary btn-sm" onClick="ShowModalEdit('${user.Id}');"><i class="bi bi-pencil-square"></i> Edit</button>`);
-                tdAction.append(`<button class="btn btn-danger mx-2 btn-sm" onClick="DeleteProduct(${user.Id})"><i class="bi bi-trash"></i> Delete</button>`);
-                newRow.append(tdAction);
-                tbody.append(newRow);
+                if (user.Status === 1) status = `<span class="dot bg-success"></span>Active`;
+                // staus = 0 => block
+                else if (user.Status === 0) status = `<span class="dot bg-danger"></span>Block`;
+
+                table.row.add([
+                    user.Id,
+                    user.Fullname,
+                    user.Email,
+                    user.Phone,
+                    user.Address,
+                    user.Role.Name,
+                    status,
+                    btnEditDOM + btnDeleteDOM,
+                ]).draw(false);
             });
-
-            // show paging
-            RenderPaging(pageSize, currentPage, filter);
         }
     });
-}
-
-function RenderPaging(pageSize, currentPage, filter) {
-    var url = 'https://localhost:5000/odata/User?$count=true';
-    // if have filter
-    if (filter !== '&$filter=') url += filter;
-
-    $.ajax({
-        url: url,
-        type: "GET",
-        dataType: 'json',
-        success: function (listUsers) {
-            // get total items
-            totalItems = listUsers["@odata.count"];
-
-            // no result found
-            if (totalItems === 0) {
-                $('#table').attr("hidden", true);
-                $('#page-size').hide();
-                $('#show-result').html(`<i>No result found!</i>`);
-            } else {
-                $('#table').attr("hidden", false);
-                $('#page-size').show();
-                $('#show-result').html(``);
-            }
-
-            // get total pages
-            totalPages = totalItems % pageSize === 0 ? totalItems / pageSize : Math.floor(totalItems / pageSize + 1);
-            // clear Paging DOM
-            $(".pagination").empty();
-
-            // pageSize >= totalItems => Empty Paging DOM
-            if (pageSize < totalItems) {
-                var ul = $(".pagination");
-                // <li> Previoue DOM
-                var liPre = "";
-                // <li> disabled
-                if (currentPage === 1) liPre = $(`<li class="page-item disabled"></li>`);
-                // <li> enabled
-                else liPre = $(`<li class="page-item"></li>`);
-                // append <li> to <ul>
-                liPre.append(`<button class="page-link" aria-label="Previous" onClick="RenderUsers(${pageSize},${currentPage - 1});"><span aria-hidden="true">&laquo;</span></button>`);
-                ul.append(liPre);
-
-                // <li> Page DOM
-                var liPage = "";
-                for (var i = 1; i <= totalPages; i++) {
-                    // <li> Active
-                    if (i === currentPage) liPage = $(`<li class="page-item active"></li>`);
-                    // <li> Inactive
-                    else liPage = $(`<li class="page-item"></li>`);
-                    // append <li> to <ul>
-                    liPage.append(`<button class="page-link" onClick="RenderUsers(${pageSize},${i});">${i}</button>`);
-                    ul.append(liPage);
-                }
-
-                // <li> Next DOM
-                var liNext = "";
-                // <li> disabled
-                if (currentPage === totalPages) liNext = $(`<li class="page-item disabled"></li>`);
-                // <li> enabled
-                else liNext = $(`<li class="page-item"></li>`);
-                // append <li> to <ul>
-                liNext.append(`<button class="page-link" aria-label="Next" onClick="RenderUsers(${pageSize},${currentPage + 1});"><span aria-hidden="true">&raquo;</span></button>`);
-                ul.append(liNext);
-            }
-        }
-    });
-}
-
-function RenderPageSize() {
-    $("#select-optgroup").empty();
-    $("#select-optgroup").append(`<option>5</option>`);
-    $("#select-optgroup").append(`<option selected>10</option>`);
-    $("#select-optgroup").append(`<option>20</option>`);
 }
 
 function ShowModalEdit(id) {
@@ -435,13 +308,13 @@ function CheckMatchPw(selector1, selector2) {
 
 function ModalAddSubmitForm() {
     // Validation Input
-    CheckNullInput("#add-uname", 'Full name must be not null');
-    CheckNullInput("#add-uemail", 'Email must be not null');
-    CheckNullInput("#add-upw", 'Password must be not null');
-    CheckNullInput("#confirm-upw", 'Confirm password must be not null');
+    CheckNullInput("#add-uname", 'Full name must be not null or empty');
+    CheckNullInput("#add-uemail", 'Email must be not null or empty');
+    CheckNullInput("#add-upw", 'Password must be not null or empty');
+    CheckNullInput("#confirm-upw", 'Confirm password must be not null or empty');
     CheckMatchPw("#add-upw", "#confirm-upw");
-    CheckNullInput("#add-uphone", 'Phone must be not null');
-    CheckNullInput("#add-uaddress", 'Address must be not null');
+    CheckNullInput("#add-uphone", 'Phone must be not null or empty');
+    CheckNullInput("#add-uaddress", 'Address must be not null or empty');
 
     var hasError = false;
     $('span.text-danger.small').each(function () {
@@ -468,6 +341,8 @@ function ModalAddSubmitForm() {
             data: JSON.stringify(data_user),
             contentType: "application/json",
             success: function (response) {
+                // add new row datatable
+                RenderUsers();
                 // hide modal add
                 $("#add-user-modal").modal("hide");
                 showToastSuccess(`Add user(${data_user.fullname}) successfully!`);
@@ -477,4 +352,34 @@ function ModalAddSubmitForm() {
             }
         });
     }
+}
+
+function ModalEditSubmitForm() {
+    var data_user = {
+        id: $('#edit-id').val(),
+        fullname: $("#edit-uname").val(),
+        email: $("#edit-uemail").val(),
+        password: $("#edit-upw").val(),
+        phone: $("#edit-uphone").val(),
+        address: $("#edit-uaddress").val(),
+        roleId: $("#edit-urole").val(),
+        status: $("#edit-ustatus").val()
+    };
+
+    $.ajax({
+        url: `https://localhost:5000/odata/user('${data_user.id}')`,
+        type: "PUT",
+        data: JSON.stringify(data_user),
+        contentType: "application/json",
+        success: function (response) {
+            // edit row datatable
+            RenderUsers();
+            // hide modal add
+            $("#edit-user-modal").modal("hide");
+            showToastSuccess(`Edit user(${data_user.fullname}) successfully!`);
+        },
+        error: function (error) {
+            console.error("Request failed. Error:", error);
+        }
+    });
 }

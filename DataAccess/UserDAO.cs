@@ -33,10 +33,11 @@ namespace DataAccess
             if (result != null)
             {
                 result.Fullname = x.Fullname;
+                result.Email = x.Email;
                 result.Password = x.Password;
                 result.Phone = x.Phone;
                 result.Address = x.Address;
-                result.Role = x.Role;
+                result.RoleId = x.RoleId;
                 result.Status = x.Status;
                 _context.SaveChanges();
             }

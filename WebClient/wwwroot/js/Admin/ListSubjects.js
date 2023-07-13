@@ -1,5 +1,4 @@
-﻿// Global variables for pagination
-var pageSizeRaw = 10, currentPageRaw = 1, totalItems = 0, totalPages = 0;
+﻿var table = $('table').DataTable();
 
 $(document).on({
     ajaxStart: function () { $("body").addClass("loading"); },
@@ -7,54 +6,91 @@ $(document).on({
 });
 
 $(function () {
-    // render users view
-    RenderSubjects(pageSizeRaw, currentPageRaw);
-
-    $("#select-page-size").on("change", function () {
-        RenderSubjects($("#select-page-size").val(), 1);
-    });
+    // render subjects view
+    RenderSubjects();
 
     $("#btn-add-subject").on("click", function () {
         ShowModelAdd();
     });
 
-    $("#add-teacher-id").on('change', function () {
-        var teacherId = $("#add-teacher-id").val();
-        // <div id="add-teacher-details"></div>
-        ShowTeacherInfor("#add-teacher-details", teacherId);
+    $('#edit-modal-btn-unassigned ,#add-modal-btn-unassigned').on('click', function () {
+        $(this).parent().siblings('select').val(null).trigger('change');
     });
 
-    $("#edit-teacher-id").on('change', function () {
-        var teacherId = $("#edit-teacher-id").val();
-        // <div id="add-teacher-details"></div>
-        ShowTeacherInfor("#edit-teacher-details", teacherId);
-    });
-
-    $('#btn-search').on('click', function () {
-        RenderSubjects($('#select-page-size').val(), 1);
-    });
-
-    // render page size view
-    RenderPageSize();
+    $.fn.dataTable.ext.errMode = function (settings, helpPage, message) {
+        console.log(message);
+    };
 });
 
-function ShowTeacherInfor(selector, id) {
-    //get api teacher details
-    $.ajax({
-        url: `https://localhost:5000/odata/User('${id}')`,
-        type: "GET",
-        contentType: "application/json; charset=utf-8",
-        dataType: "json",
-        success: function (result, status, xhr) {
-            $(selector).empty();
+function showToastSuccess(contentBody) {
+    const toast = {
+        type: 'success',
+        body: `${contentBody}`
+    };
+    Toast(toast);
+}
 
-            if (result !== undefined) {
-                $(selector).append(`(TeacherId: ${result.Id}, Fullname: ${result.Fullname},
-                        Email: ${result.Email}, Phone: ${result.Phone}, Address: ${result.Address}).`);
-            }
-        },
-        error: function (xhr, status, error) {
-            console.log(xhr);
+function showToastFail(contentBody) {
+    const toast = {
+        type: 'error',
+        body: `${contentBody}`
+    };
+    Toast(toast);
+}
+
+function Toast({ type, body }) {
+    var toastLiveExample = $('#liveToast');
+    const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLiveExample);
+    var toastTitle = $('#toast-title');
+    var toastBody = $('#toast-body');
+
+    if (type === 'success') {
+        toastTitle.empty();
+        toastTitle.removeClass();
+        toastTitle.addClass('text-success');
+        toastTitle.html(`
+            <span class="bi bi-check-circle-fill"></span>
+            <strong class="me-auto">Success</strong>
+        `);
+
+        toastBody.empty();
+        toastBody.html(body);
+    } else if (type === 'error') {
+        toastTitle.empty();
+        toastTitle.removeClass();
+        toastTitle.addClass('text-danger');
+        toastTitle.html(`
+            <span class="bi bi-x-circle-fill"></span>
+            <strong class="me-auto">Error</strong>
+        `);
+
+        toastBody.empty();
+        toastBody.html(body);
+    }
+    toastBootstrap.show();
+}
+
+function RenderSubjects() {
+    table.clear().draw(false);
+    $.ajax({
+        url: `https://localhost:5000/odata/subject?$expand=user`,
+        type: "GET",
+        dataType: 'json',
+        success: function (listSubjects) {
+            var subjects = listSubjects.value;
+            // Create view data subjects
+            $.each(subjects, function (index, subject) {
+                var unassignDOM = `<span class="badge bg-danger">Unassigned</span>`;
+                var btnEditDOM = `<button class="btn btn-primary mx-2 btn-sm" onClick="ShowModalEdit(${subject.Id});"><i class="bi bi-pencil-square"></i> Edit</button>`;
+                var btnDeleteDOM = `<button class="btn btn-danger btn-sm" onClick="DeleteProduct(${subject.Id})"><i class="bi bi-trash"></i> Delete</button>`;
+                table.row.add([
+                    subject.Id,
+                    subject.Code,
+                    subject.Name,
+                    `${subject.User != null ? subject.User.Fullname : unassignDOM}`,
+                    btnEditDOM + btnDeleteDOM,
+                ]).draw(false);
+            });
         }
     });
 }
@@ -71,9 +107,10 @@ function ShowModelAdd() {
             $('#add-name').val(null);
             $('#add-teacher-id').empty();
 
+            $('#add-teacher-id').append(`<optgroup label="TeacherName-TeacherEmail"></optgroup>`);
             //Load select listTeachers
             $.each(result.value, function (index, teacher) {
-                $('#add-teacher-id').append(`<option value="${teacher.Id}">${teacher.Fullname}-${teacher.Email}</option>`);
+                $('#add-teacher-id optgroup').append(`<option value="${teacher.Id}">${teacher.Fullname}-${teacher.Email}</option>`);
             });
 
             //select search
@@ -115,9 +152,10 @@ function ShowModalEdit(id) {
                     // clear items
                     $('#edit-teacher-id').empty();
 
+                    $('#edit-teacher-id').append(`<optgroup label="TeacherName-TeacherEmail"></optgroup>`)
                     //Load select listTeachers
                     $.each(teachers.value, function (index, teacher) {
-                        $('#edit-teacher-id').append(`<option value="${teacher.Id}" >${teacher.Fullname}</option>`);
+                        $('#edit-teacher-id optgroup').append(`<option value="${teacher.Id}">${teacher.Fullname}-${teacher.Email}</option>`);
                     });
 
                     //select search
@@ -150,124 +188,77 @@ function ShowModalEdit(id) {
     });
 }
 
-function RenderSubjects(pageSize, currentPage) {
-    // paging
-    var skipCount = (currentPage - 1) * pageSize;
-    var query = "&$top=" + pageSize + "&$skip=" + skipCount;
-
-    // filter select
-    var filter = '&$filter=';
-    var search = $('#search').val();
-    // if have search
-    if (search !== '') {
-        filter += `contains(code,'${search}') or contains(name,'${search}') or contains(teacherid, '${search}') or contains(user/fullname,'${search}')`;
+function CheckNullInput(selector, error) {
+    if ($(selector).val().length === 0) {
+        $(selector).siblings('.text-danger').text(error);
+    } else {
+        $(selector).siblings('.text-danger').text('');
     }
+}
 
-    // if have filter
-    if (filter !== '&$filter=') query += filter;
+function ModalAddSumibtForm() {
+    // Validation Input
+    CheckNullInput("#add-code", 'Code must be not null or empty');
+    CheckNullInput("#add-name", 'SubjectName must be not null or empty');
+
+    var hasError = false;
+    $('span.text-danger.small').each(function () {
+        if ($(this).text().trim() !== '') {
+            hasError = true;
+            return;
+        }
+    });
+
+    if (hasError === false) {
+        var data_subject = {
+            code: $("#add-code").val(),
+            name: $("#add-name").val(),
+            teacherId: $("#add-teacher-id option:selected").length > 0 ? $("#add-teacher-id").val() : null,
+        };
+
+        $.ajax({
+            url: "https://localhost:5000/odata/subject",
+            type: "POST",
+            data: JSON.stringify(data_subject),
+            contentType: "application/json",
+            success: function (response) {
+                // add new row datatable
+                RenderSubjects();
+
+                // hide modal add
+                $("#add-subject-modal").modal("hide");
+                showToastSuccess(`Add subject(${data_subject.code}) successfully!`);
+            },
+            error: function (error) {
+                showToastFail(error.responseText);
+            }
+        });
+    }
+}
+
+function ModalEditSubmitForm() {
+    var data_subject = {
+        id: $('#edit-id').val(),
+        code: $("#edit-code").val(),
+        name: $("#edit-name").val(),
+        teacherId: $("#edit-teacher-id option:selected").length > 0 ? $("#edit-teacher-id").val() : null,
+    };
 
     $.ajax({
-        url: `https://localhost:5000/odata/subject?$expand=user` + query,
-        type: "GET",
-        dataType: 'json',
-        success: function (listSubjects) {
-            // Create view data users
-            $("#table-body").empty();
-            $.each(listSubjects.value, function (index, subject) {
-                var tbody = $("#table-body");
-                var newRow = $("<tr></tr>");
-                newRow.append(`<td class="text-truncate">${index + 1 + pageSize * (currentPage - 1)}</td>`);
-                newRow.append(`<td class="text-truncate">${subject.Id}</td>`);
-                newRow.append(`<td class="text-truncate">${subject.Code}</td>`);
-                newRow.append(`<td class="text-truncate">${subject.Name}</td>`);
-                var unassignDOM = `<span class="badge bg-danger">Unassigned</span>`;
-                newRow.append(`<td class="text-truncate">${subject.TeacherId != null ? subject.TeacherId : unassignDOM}</td>`);
-                newRow.append(`<td class="text-truncate">${subject.User != null ? subject.User.Fullname : unassignDOM}</td>`);
-                var tdAction = $(`<td class="text-truncate">`);
-                tdAction.append(`<button class="btn btn-primary mx-2 btn-sm" onClick="ShowModalEdit(${subject.Id});"><i class="bi bi-pencil-square"></i> Edit</button>`);
-                tdAction.append(`<button class="btn btn-danger btn-sm" onClick="DeleteProduct(${subject.Id})"><i class="bi bi-trash"></i> Delete</button>`);
-                newRow.append(tdAction);
-                tbody.append(newRow);
-            });
+        url: `https://localhost:5000/odata/subject(${data_subject.id})`,
+        type: "PUT",
+        data: JSON.stringify(data_subject),
+        contentType: "application/json",
+        success: function (response) {
+            // edit row datatable
+            RenderSubjects();
 
-            // show paging
-            RenderPaging(pageSize, currentPage, filter);
+            // hide modal edit
+            $("#edit-subject-modal").modal("hide");
+            showToastSuccess(`Edit subject(${data_subject.code}) successfully!`);
+        },
+        error: function (error) {
+            showToastFail(error.responseText);
         }
     });
 }
-
-function RenderPaging(pageSize, currentPage, filter) {
-    var url = `https://localhost:5000/odata/subject?$count=true`;
-    // if have filter
-    if (filter !== '&$filter=') url += filter;
-
-    $.ajax({
-        url: url,
-        type: "GET",
-        dataType: 'json',
-        success: function (listSubjects) {
-            // get total items
-            totalItems = listSubjects["@odata.count"];
-
-            // no result found
-            if (totalItems === 0) {
-                $('#table').attr("hidden", true);
-                $('#page-size').hide();
-                $('#show-result').html(`<i>No result found!</i>`);
-            } else {
-                $('#table').attr("hidden", false);
-                $('#page-size').show();
-                $('#show-result').html(``);
-            }
-
-            // get total pages
-            totalPages = totalItems % pageSize === 0 ? totalItems / pageSize : Math.floor(totalItems / pageSize + 1);
-            // clear Paging DOM
-            $(".pagination").empty();
-
-            // pageSize >= totalItems => Empty Paging DOM
-            if (pageSize < totalItems) {
-                var ul = $(".pagination");
-                // <li> Previoue DOM
-                var liPre = "";
-                // <li> disabled
-                if (currentPage === 1) liPre = $(`<li class="page-item disabled"></li>`);
-                // <li> enabled
-                else liPre = $(`<li class="page-item"></li>`);
-                // append <li> to <ul>
-                liPre.append(`<button class="page-link" aria-label="Previous" onClick="RenderSubjects(${pageSize},${currentPage - 1});"><span aria-hidden="true">&laquo;</span></button>`);
-                ul.append(liPre);
-
-                // <li> Page DOM
-                var liPage = "";
-                for (var i = 1; i <= totalPages; i++) {
-                    // <li> Active
-                    if (i === currentPage) liPage = $(`<li class="page-item active"></li>`);
-                    // <li> Inactive
-                    else liPage = $(`<li class="page-item"></li>`);
-                    // append <li> to <ul>
-                    liPage.append(`<button class="page-link" onClick="RenderSubjects(${pageSize},${i});">${i}</button>`);
-                    ul.append(liPage);
-                }
-
-                // <li> Next DOM
-                var liNext = "";
-                // <li> disabled
-                if (currentPage === totalPages) liNext = $(`<li class="page-item disabled"></li>`);
-                // <li> enabled
-                else liNext = $(`<li class="page-item"></li>`);
-                // append <li> to <ul>
-                liNext.append(`<button class="page-link" aria-label="Next" onClick="RenderSubjects(${pageSize},${currentPage + 1});"><span aria-hidden="true">&raquo;</span></button>`);
-                ul.append(liNext);
-            }
-        }
-    });
-}
-
-function RenderPageSize() {
-    $("#select-optgroup").empty();
-    $("#select-optgroup").append(`<option>5</option>`);
-    $("#select-optgroup").append(`<option selected>10</option>`);
-    $("#select-optgroup").append(`<option>20</option>`);
-}
-

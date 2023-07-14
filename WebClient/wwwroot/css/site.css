@@ -19,8 +19,8 @@ body {
 }
 
 #eye-password, #confirm-eye-password, #edit-eye-password {
-    margin-left: -22px;
-    margin-top: 3px;
+    margin-left: -21px;
+    margin-top: 9px;
     cursor: pointer;
 }
 

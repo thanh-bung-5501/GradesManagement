@@ -1,5 +1,6 @@
-﻿// Global variables for pagination
-var pageSizeRaw = 10, currentPageRaw = 1, totalItems = 0, totalPages = 0;
+﻿var table = $('table').DataTable({
+    autoWidth: true,
+});
 
 $(document).on({
     ajaxStart: function () { $("body").addClass("loading"); },
@@ -7,27 +8,71 @@ $(document).on({
 });
 
 $(function () {
-    // load data grade
-    RenderGrades(pageSizeRaw, currentPageRaw);
-    // load page size
-    RenderPageSize();
+    // render grades view
+    RenderGrades();
 
     $("#btn-add-grade").on("click", function () {
         ShowModelAdd();
     });
 
-    $("#add-student-id").on('change', function () {
-        var studentId = $("#add-student-id").val();
-        // <div id="add-student-details"></div>
-        ShowStudentInfor("#add-student-details", studentId);
+    $('#btn-import-grades').on('click', function () {
+        $('#formFileSm').val(null);
+        $('#show-error').empty();
+        $('#modal-import-grades').modal('show');
     });
 
-    $("#add-subject-id").on('change', function () {
-        var subjectId = $("#add-subject-id").val();
-        // <div id="add-student-details"></div>
-        ShowSubjectInfor("#add-subject-details", subjectId);
+    $('#download-template').on('click', function () {
+        //DownloadTemplate();
     });
 });
+
+function showToastSuccess(contentBody) {
+    const toast = {
+        type: 'success',
+        body: `${contentBody}`
+    };
+    Toast(toast);
+}
+
+function showToastFail(contentBody) {
+    const toast = {
+        type: 'error',
+        body: `${contentBody}`
+    };
+    Toast(toast);
+}
+
+function Toast({ type, body }) {
+    var toastLiveExample = $('#liveToast');
+    const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLiveExample);
+    var toastTitle = $('#toast-title');
+    var toastBody = $('#toast-body');
+
+    if (type === 'success') {
+        toastTitle.empty();
+        toastTitle.removeClass();
+        toastTitle.addClass('text-success');
+        toastTitle.html(`
+            <span class="bi bi-check-circle-fill"></span>
+            <strong class="me-auto">Success</strong>
+        `);
+
+        toastBody.empty();
+        toastBody.html(body);
+    } else if (type === 'error') {
+        toastTitle.empty();
+        toastTitle.removeClass();
+        toastTitle.addClass('text-danger');
+        toastTitle.html(`
+            <span class="bi bi-x-circle-fill"></span>
+            <strong class="me-auto">Error</strong>
+        `);
+
+        toastBody.empty();
+        toastBody.html(body);
+    }
+    toastBootstrap.show();
+}
 
 function ParseDateTime(inputDate) {
     var dateTime = new Date(inputDate);
@@ -42,48 +87,6 @@ function ParseDateTime(inputDate) {
     return formattedDateTime;
 }
 
-function ShowStudentInfor(selector, id) {
-    $(selector).empty();
-    //get api student details
-    $.ajax({
-        url: `https://localhost:5000/odata/User('${id}')`,
-        type: "GET",
-        contentType: "application/json; charset=utf-8",
-        dataType: "json",
-        success: function (result, status, xhr) {
-            if (result !== undefined) {
-                $(selector).append(`(StudentId: ${result.Id}, Fullname: ${result.Fullname},
-                        Email: ${result.Email}, Phone: ${result.Phone}, Address: ${result.Address}).`);
-            }
-        },
-        error: function (xhr, status, error) {
-            console.log(xhr);
-        }
-    });
-}
-
-function ShowSubjectInfor(selector, id) {
-    $(selector).empty();
-    if (id) {
-        //get api subject details
-        $.ajax({
-            url: `https://localhost:5000/odata/subject(${id})`,
-            type: "GET",
-            contentType: "application/json; charset=utf-8",
-            dataType: "json",
-            success: function (result, status, xhr) {
-                if (result !== undefined) {
-                    $(selector).append(`(SubjectId: ${result.Id}, Code: ${result.Code},
-                        Name: ${result.Name})`);
-                }
-            },
-            error: function (xhr, status, error) {
-                console.log(xhr);
-            }
-        });
-    }
-}
-
 function LoadSelectSearchStudent(selectorSelectSearch, selectorModal, value) {
     $.ajax({
         url: `https://localhost:5000/odata/User?$expand=role&$filter=Role/Name eq 'student'`,
@@ -91,10 +94,10 @@ function LoadSelectSearchStudent(selectorSelectSearch, selectorModal, value) {
         contentType: "application/json; charset=utf-8",
         dataType: "json",
         success: function (result, status, xhr) {
-            $(selectorSelectSearch).append(`<optgroup label="StudentName-StudentEmail"></optgroup>`);
+            $(selectorSelectSearch).append(`<optgroup label="[Id] Fullname"></optgroup>`);
 
             $.each(result.value, function (index, student) {
-                $(`${selectorSelectSearch} optgroup`).append(`<option value="${student.Id}">${student.Fullname}-${student.Email}</option>`);
+                $(`${selectorSelectSearch} optgroup`).append(`<option value="${student.Id}">[${student.Id}] ${student.Fullname}</option>`);
             });
 
             //select search
@@ -122,9 +125,9 @@ function LoadSelecSearchSubject(selectorSelectSearch, selectorModal, value) {
         contentType: "application/json; charset=utf-8",
         dataType: "json",
         success: function (result, status, xhr) {
-            $(selectorSelectSearch).append(`<optgroup label="SubjectCode-SubjectName"></optgroup>`);
+            $(selectorSelectSearch).append(`<optgroup label="[Id] Code"></optgroup>`);
             $.each(result.value, function (index, subject) {
-                $(selectorSelectSearch).append(`<option value="${subject.Id}">${subject.Code}-${subject.Name}</option>`);
+                $(selectorSelectSearch).append(`<option value="${subject.Id}">[${subject.Id}] ${subject.Code}</option>`);
 
             });
 
@@ -152,7 +155,7 @@ function LoadSelectSearchGradeCategory(selectorSelectSearch, selectorModal, valu
         contentType: "application/json; charset=utf-8",
         dataType: "json",
         success: function (result, status, xhr) {
-            $(selectorSelectSearch).append(`<optgroup label="GradeCategoryName"></optgroup>`);
+            $(selectorSelectSearch).append(`<optgroup label="Category"></optgroup>`);
             $.each(result.value, function (index, gradeCategory) {
                 $(selectorSelectSearch).append(`<option value="${gradeCategory.Id}">${gradeCategory.Name}</option>`);
             });
@@ -224,96 +227,31 @@ function ShowModalEdit(studentId, subjectId, gradeCatId) {
     });
 }
 
-function RenderGrades(pageSize, currentPage) {
-    var skipCount = (currentPage - 1) * pageSize;
-    var query = "&$top=" + pageSize + "&$skip=" + skipCount;
-
-    $.ajax({
-        url: `https://localhost:5000/odata/grades?$expand=User,GradeCategory,Subject&count=true` + query,
-        type: "GET",
-        dataType: 'json',
-        success: function (listGrades) {
-            // Create view data users
-            $("#table-body").empty();
-            $.each(listGrades.value, function (index, grade) {
-                var tbody = $("#table-body");
-                var newRow = $("<tr></tr>");
-                newRow.append(`<td class="text-truncate">${index + 1 + pageSize * (currentPage - 1)}</td>`);
-                newRow.append(`<td class="text-truncate">${grade.StudentId}</td>`);
-                newRow.append(`<td class="text-truncate">${grade.Subject.Code}</td>`);
-                newRow.append(`<td class="text-truncate">${grade.GradeCategory.Name}</td>`);
-                newRow.append(`<td class="text-truncate">${grade.Grade}</td>`);
-                newRow.append(`<td class="text-truncate">${ParseDateTime(grade.CreatedOn)}</td>`);
-                newRow.append(`<td class="text-truncate">${ParseDateTime(grade.ModifiedOn)}</td>`);
-                newRow.append(`<td class="text-truncate">${grade.CreatedBy}</td>`);
-                newRow.append(`<td class="text-truncate">${grade.ModifiedBy}</td>`);
-                var tdAction = $(`<td class="text-truncate">`);
-                tdAction.append(`<button class="btn btn-primary mx-2 btn-sm" onClick="ShowModalEdit(${grade.StudentId}, ${grade.SubjectId}, ${grade.GradeCategoryId});"><i class="bi bi-pencil-square"></i> Edit</button>`);
-                tdAction.append(`<button class="btn btn-danger btn-sm" onClick="DeleteProduct(${grade.Id})"><i class="bi bi-trash"></i> Delete</button>`);
-                newRow.append(tdAction);
-                tbody.append(newRow);
-            });
-            // load paging
-            RenderPaging(pageSize, currentPage);
-        }
-    });
-}
-
-function RenderPaging(pageSize, currentPage) {
+function RenderGrades() {
+    table.clear().draw(false);
     $.ajax({
         url: `https://localhost:5000/odata/grades?$expand=User,GradeCategory,Subject&count=true`,
         type: "GET",
         dataType: 'json',
         success: function (listGrades) {
-            // get total items
-            totalItems = listGrades["@odata.count"];
-            // get total pages
-            totalPages = totalItems % pageSize === 0 ? totalItems / pageSize : Math.floor(totalItems / pageSize + 1);
-            // clear Paging DOM
-            $(".pagination").empty();
+            var grades = listGrades.value;
+            // Create view data grades
+            $.each(grades, function (index, grade) {
+                var btnEditDOM = `<button class="btn btn-primary mx-2 btn-sm" onClick="ShowModalEdit(${grade.StudentId}, ${grade.SubjectId}, ${grade.GradeCategoryId});"><i class="fa-solid fa-pen-to-square"></i> Edit</button>`;
+                var btnDeleteDOM = `<button class="btn btn-danger btn-sm" onClick="DeleteProduct(${grade.Id})"><i class="fa-solid fa-trash"></i> Delete</button>`;
 
-            // pageSize >= totalItems => Empty Paging DOM
-            if (pageSize < totalItems) {
-                var ul = $(".pagination");
-                // <li> Previoue DOM
-                var liPre = "";
-                // <li> disabled
-                if (currentPage === 1) liPre = $(`<li class="page-item disabled"></li>`);
-                // <li> enabled
-                else liPre = $(`<li class="page-item"></li>`);
-                // append <li> to <ul>
-                liPre.append(`<button class="page-link" aria-label="Previous" onClick="RenderGrades(${pageSize},${currentPage - 1});"><span aria-hidden="true">&laquo;</span></button>`);
-                ul.append(liPre);
-
-                // <li> Page DOM
-                var liPage = "";
-                for (var i = 1; i <= totalPages; i++) {
-                    // <li> Active
-                    if (i === currentPage) liPage = $(`<li class="page-item active"></li>`);
-                    // <li> Inactive
-                    else liPage = $(`<li class="page-item"></li>`);
-                    // append <li> to <ul>
-                    liPage.append(`<button class="page-link" onClick="RenderGrades(${pageSize},${i});">${i}</button>`);
-                    ul.append(liPage);
-                }
-
-                // <li> Next DOM
-                var liNext = "";
-                // <li> disabled
-                if (currentPage === totalPages) liNext = $(`<li class="page-item disabled"></li>`);
-                // <li> enabled
-                else liNext = $(`<li class="page-item"></li>`);
-                // append <li> to <ul>
-                liNext.append(`<button class="page-link" aria-label="Next" onClick="RenderGrades(${pageSize},${currentPage + 1});"><span aria-hidden="true">&raquo;</span></button>`);
-                ul.append(liNext);
-            }
+                table.row.add([
+                    grade.StudentId,
+                    grade.Subject.Code,
+                    grade.GradeCategory.Name,
+                    grade.Grade,
+                    ParseDateTime(grade.CreatedOn),
+                    ParseDateTime(grade.ModifiedOn),
+                    grade.CreatedBy,
+                    grade.ModifiedBy,
+                    btnEditDOM + btnDeleteDOM,
+                ]).draw(false);
+            });
         }
     });
-}
-
-function RenderPageSize() {
-    $("#select-optgroup").empty();
-    $("#select-optgroup").append(`<option>5</option>`);
-    $("#select-optgroup").append(`<option selected>10</option>`);
-    $("#select-optgroup").append(`<option>20</option>`);
 }

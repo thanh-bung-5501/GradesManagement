@@ -27,7 +27,7 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title"><i class="bi bi-person-fill-add"></i> Add Subject</h5>
+                <h5 class="modal-title"><i class="fa-solid fa-square-plus"></i> Add Subject</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -44,12 +44,15 @@
                 </div>
 
                 <label class="col-form-label-sm">Teacher</label>
-                <select id="add-teacher-id" style="width: 100%">
-                </select>
+                <div class="d-flex align-items-center">
+                    <select id="add-teacher-id" style="width: 100%;">
+                    </select>
+                    <div id="add-btn-cancel"></div>
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary btn-sm" onclick="ModalAddSumibtForm();"><i class="bi bi-save"></i> Save</button>
+                <button type="button" class="btn btn-primary btn-sm" onclick="ModalAddSumibtForm();"><i class="fa-solid fa-floppy-disk"></i> Save</button>
             </div>
         </div>
     </div>
@@ -60,7 +63,7 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title"><i class="bi bi-pencil-square"></i> Edit</h5>
+                <h5 class="modal-title"><i class="fa-solid fa-pen-to-square"></i> Edit Subject</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -74,12 +77,15 @@
                 <input id="edit-name" class="form-control form-control-sm" type="text" />
 
                 <label class="col-form-label-sm">Teacher</label>
-                <select id="edit-teacher-id" style="width: 100%">
-                </select>
+                <div class="d-flex align-items-center">
+                    <select id="edit-teacher-id" style="width: 100%">
+                    </select>
+                    <div id="edit-btn-cancel"></div>
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary btn-sm" onclick="ModalEditSubmitForm();"><i class="bi bi-save"></i> Save changes</button>
+                <button type="button" class="btn btn-primary btn-sm" onclick="ModalEditSubmitForm();"><i class="fa-solid fa-floppy-disk"></i> Save changes</button>
             </div>
         </div>
     </div>
@@ -87,17 +93,18 @@
 
 <h3>List Subjects</h3>
 <div class="mb-2">
-    <button id="btn-add-subject" class="btn btn-primary btn-sm"><i class="bi bi-plus-square"></i> Add Subject</button>
+    <button id="btn-add-subject" class="btn btn-primary btn-sm"><i class="fa-solid fa-square-plus"></i> Add Subject</button>
 </div>
 
 @*Table*@
-<table class="display compact" style="width:100%">
+<table class="display compact nowrap" style="width:100%">
     <thead>
         <tr>
             <th scope="col">Subject Id</th>
             <th scope="col">Subject Code</th>
             <th scope="col">Subject Name</th>
             <th scope="col">Teacher</th>
+            <th scope="col">Teacher Email</th>
             <th scope="col">Action</th>
         </tr>
     </thead>

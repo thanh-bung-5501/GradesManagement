@@ -1,4 +1,6 @@
-﻿var table = $('table').DataTable();
+﻿var table = $('table').DataTable({
+    autoWidth: true,
+});
 
 $(document).on({
     ajaxStart: function () { $("body").addClass("loading"); },
@@ -13,8 +15,24 @@ $(function () {
         ShowModelAdd();
     });
 
-    $('#edit-modal-btn-unassigned ,#add-modal-btn-unassigned').on('click', function () {
-        $(this).parent().siblings('select').val(null).trigger('change');
+    $('#add-teacher-id').on('select2:select', function (e) {
+        $('#add-btn-cancel').empty();
+        $('#add-btn-cancel').append(`<button type="button" class="btn-close btn-sm" aria-label="Close"></button>`);
+    });
+
+    $("#add-btn-cancel").on('click', function () {
+        $("#add-teacher-id").val(null).trigger('change');
+        $(this).empty();
+    });
+
+    $('#edit-teacher-id').on('select2:select', function (e) {
+        $('#edit-btn-cancel').empty();
+        $('#edit-btn-cancel').append(`<button type="button" class="btn-close btn-sm" aria-label="Close"></button>`);
+    });
+
+    $("#edit-btn-cancel").on('click', function () {
+        $("#edit-teacher-id").val(null).trigger('change');
+        $(this).empty();
     });
 
     $.fn.dataTable.ext.errMode = function (settings, helpPage, message) {
@@ -80,14 +98,14 @@ function RenderSubjects() {
             var subjects = listSubjects.value;
             // Create view data subjects
             $.each(subjects, function (index, subject) {
-                var unassignDOM = `<span class="badge bg-danger">Unassigned</span>`;
-                var btnEditDOM = `<button class="btn btn-primary mx-2 btn-sm" onClick="ShowModalEdit(${subject.Id});"><i class="bi bi-pencil-square"></i> Edit</button>`;
-                var btnDeleteDOM = `<button class="btn btn-danger btn-sm" onClick="DeleteProduct(${subject.Id})"><i class="bi bi-trash"></i> Delete</button>`;
+                var btnEditDOM = `<button class="btn btn-primary btn-sm" onClick="ShowModalEdit(${subject.Id});"><i class="fa-solid fa-pen-to-square"></i> Edit</button>`;
+                var btnDeleteDOM = `<button class="btn btn-danger mx-2 btn-sm" onClick="DeleteProduct(${subject.Id})"><i class="fa-solid fa-trash"></i> Delete</button>`;
                 table.row.add([
                     subject.Id,
                     subject.Code,
                     subject.Name,
-                    `${subject.User != null ? subject.User.Fullname : unassignDOM}`,
+                    `${subject.User != null ? subject.User.Fullname : '-'}`,
+                    `${subject.User != null ? subject.User.Email : '-'}`,
                     btnEditDOM + btnDeleteDOM,
                 ]).draw(false);
             });
@@ -174,6 +192,10 @@ function ShowModalEdit(id) {
                     // support load data .trigger('change')
                     $('#edit-teacher-id').val(result.TeacherId).trigger('change');
 
+                    $('#edit-btn-cancel').empty();
+                    if (result.TeacherId) {
+                        $('#edit-btn-cancel').append(`<button type="button" class="btn-close btn-sm" aria-label="Close"></button>`);
+                    }
                 },
                 error: function (xhr, status, error) {
                     console.log(xhr);

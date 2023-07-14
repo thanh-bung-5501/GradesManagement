@@ -230,8 +230,8 @@ function RenderUsers() {
             // Create view data users
             $.each(users, function (index, user) {
                 var status = '';
-                var btnEditDOM = `<button class="btn btn-primary btn-sm" onClick="ShowModalEdit('${user.Id}');"><i class="bi bi-pencil-square"></i> Edit</button>`;
-                var btnDeleteDOM = `<button class="btn btn-danger mx-2 btn-sm" onClick="DeleteProduct(${user.Id})"><i class="bi bi-trash"></i> Delete</button>`;
+                var btnEditDOM = `<button class="btn btn-primary btn-sm" onClick="ShowModalEdit('${user.Id}');"><i class="fa-solid fa-pen-to-square"></i> Edit</button>`;
+                var btnDeleteDOM = `<button class="btn btn-danger mx-2 btn-sm" onClick="DeleteProduct(${user.Id})"><i class="fa-solid fa-trash"></i> Delete</button>`;
 
                 // status = 1 => active
                 if (user.Status === 1) status = `<span class="dot bg-success"></span>Active`;

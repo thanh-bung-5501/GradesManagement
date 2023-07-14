@@ -4,53 +4,55 @@
 @{
     ViewData["Title"] = "List Grades";
 }
-
-<h3>List Grades</h3>
-<div class="row justify-content-between">
-    <div class="col-4">
-        <input class="form-control form-control-sm me-1 mb-2" type="search" placeholder="Search" aria-label="Search">
-        <div class="input-group input-group-sm mb-2">
-            <label class="input-group-text" for="select-role">Subject</label>
-            <select class="form-select form-select-sm" id="select-role">
-                <option value="">all subjects</option>
-            </select>
+@*Modal Toast*@
+<div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 999">
+    <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header justify-content-between">
+            @*toast-title*@
+            <div id="toast-title">
+            </div>
+            <div class="d-flex align-content-center">
+                <small>now</small>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
         </div>
-        <div class="input-group input-group-sm">
-            <label class="input-group-text" for="select-status">GradeCategory</label>
-            <select class="form-select form-select-sm" id="select-status">
-                <option value="">all categories</option>
-            </select>
+        @*toast-body*@
+        <div id="toast-body" class="toast-body">
         </div>
-    </div>
-    <div class="col-4">
-        <div class="input-group input-group-sm">
-            <label class="input-group-text" for="select-role">Subject</label>
-            <select class="form-select form-select-sm" id="select-role">
-                <option value="">all subjects</option>
-            </select>
-        </div>
-        <div class="input-group input-group-sm mx-2">
-            <label class="input-group-text" for="select-status">GradeCategory</label>
-            <select class="form-select form-select-sm" id="select-status">
-                <option value="">all categories</option>
-            </select>
-        </div>
-    </div>
-
-</div>
-
-<div class="d-flex justify-content-end">
-    <div class="d-flex align-items-end">
-        <button id="btn-add-grade" class="btn btn-primary btn-sm"><i class="bi bi-plus-square"></i> Add Grade</button>
-        <button class="btn btn-primary btn-sm mx-2"><i class="bi bi-download"></i> Download template</button>
-        <button class="btn btn-primary btn-sm"><i class="bi bi-upload"></i> Import Grades</button>
-        <button class="btn btn-primary btn-sm" style="margin-left: 8px"><i class="bi bi-download"></i> Export Grades</button>
     </div>
 </div>
 
-@*
-    Modal Add Grade
-*@
+@*Modal Import Grades*@
+<div class="modal fade" id="modal-import-grades" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form id="form-import-users" method="post" enctype="multipart/form-data">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="staticBackdropLabel"><i class="fa-solid fa-file-import"></i> Import grades</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="input-file" class="form-label">File input (.xlsx)</label>
+                        <div class="input-group mb-3">
+                            <input class="form-control form-control-sm" id="input-file" name="file" type="file" accept=".xlsx" aria-describedby="button-addon2">
+                            <div class="input-group-append">
+                                <button class="btn btn-primary btn-sm" id="download-template"><i class="fa-solid fa-file-arrow-down"></i> Get template</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="show-error" class="text-danger"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Import</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@*Modal Add Grade*@
 <div class="modal" id="add-modal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -76,19 +78,18 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary btn-sm" onclick=""><i class="bi bi-save"></i> Save</button>
+                <button type="button" class="btn btn-primary btn-sm" onclick=""><i class="fa-solid fa-floppy-disk"></i> Save</button>
             </div>
         </div>
     </div>
 </div>
-@*
-    Modal Edit Grade
-*@
+
+@*Modal Edit Grade*@
 <div class="modal" id="edit-modal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title"><i class="bi bi-pencil-square"></i> Edit</h5>
+                <h5 class="modal-title"><i class="fa-solid fa-pen-to-square"></i> Edit Grade</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -109,17 +110,25 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary btn-sm" onclick=""><i class="bi bi-save"></i> Save changes</button>
+                <button type="button" class="btn btn-primary btn-sm" onclick=""><i class="fa-solid fa-floppy-disk"></i> Save changes</button>
             </div>
         </div>
     </div>
 </div>
 
-@*List Grades By SubjectId*@
-<table class="table table-bordered table-striped mt-2 table-responsive">
-    <thead class="bg-primary text-white">
+<h3>List Grades</h3>
+<div class="d-flex justify-content-between mb-2">
+    <button id="btn-add-grade" class="btn btn-primary btn-sm"><i class="fa-solid fa-square-plus"></i> Add Grade</button>
+    <div>
+        <button class="btn btn-primary btn-sm" id="btn-import-grades"><i class="fa-solid fa-file-import"></i> Import Grades</button>
+        <button class="btn btn-primary btn-sm"><i class="fa-solid fa-file-export"></i> Export Grades</button>
+    </div>
+</div>
+
+@*Table*@
+<table class="display compact nowrap" style="width:100%">
+    <thead>
         <tr>
-            <th scope="col">#</th>
             <th scope="col">StudentId</th>
             <th scope="col">SubjectCode</th>
             <th scope="col">GradeCategory</th>
@@ -131,26 +140,11 @@
             <th scope="col">Action</th>
         </tr>
     </thead>
-    <tbody id="table-body">
-    </tbody>
 </table>
-@*Page size*@
-<div class="d-flex justify-content-end">
-    <div class="mx-2">
-        <select id="select-page-size" class="form-select form-select-sm">
-            <optgroup id="select-optgroup" label="Page sizes">
-            </optgroup>
-        </select>
-    </div>
-
-    <nav aria-label="Page navigation">
-        <ul class="pagination pagination-sm">
-        </ul>
-    </nav>
-</div>
 
 @* Loading ajax*@
 <div class="modal-loading"></div>
+
 @section scripts{
     <script src="~/js/admin/listgrades.js"></script>
 }

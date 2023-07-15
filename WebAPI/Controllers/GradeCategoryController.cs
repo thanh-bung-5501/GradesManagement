@@ -9,7 +9,7 @@ namespace WebAPI.Controllers
 {
     public class GradeCategoryController : ODataController
     {
-        private IGradeCategoryRepo _repo = new GradeCategoriyRepo();
+        private IGradeCategoryRepo _repo = new GradeCategoryRepo();
         private IMapper _Mapper { get; }
         public GradeCategoryController(IMapper mapper)
         {

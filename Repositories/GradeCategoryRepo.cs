@@ -3,7 +3,7 @@ using DataAccess;
 
 namespace Repositories
 {
-    public class GradeCategoriyRepo : IGradeCategoryRepo
+    public class GradeCategoryRepo : IGradeCategoryRepo
     {
         public List<GradeCategory> GetGradeCategories() => GradeCategoryDAO.GetGradeCategories();
     }

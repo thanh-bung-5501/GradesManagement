@@ -39,7 +39,7 @@ $(function () {
     });
 
     $('#btn-import-users').on('click', function () {
-        $('#formFileSm').val(null);
+        $('#input-file').val(null);
         $('#show-error').empty();
         $('#modal-import-users').modal('show');
     });

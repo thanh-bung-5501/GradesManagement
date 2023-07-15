@@ -1,13 +1,11 @@
 ﻿using AutoMapper;
 using BusinessObjects;
 using ClosedXML.Excel;
-using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OData.Formatter;
 using Microsoft.AspNetCore.OData.Query;
 using Microsoft.AspNetCore.OData.Routing.Controllers;
 using Repositories;
-using System.Collections.Generic;
 using System.Data;
 using WebAPI.Models;
 
@@ -23,7 +21,7 @@ namespace WebAPI.Controllers
         }
 
         [EnableQuery]
-        public IActionResult Get()
+        public ActionResult Get()
         {
             var users = _repo.GetUsers();
             var userDTOs = _Mapper.Map<List<UserDTO>>(users);
@@ -32,7 +30,7 @@ namespace WebAPI.Controllers
 
         [HttpPost]
         [Route("api/user/generate-user-id")]
-        public IActionResult GenerateUserID()
+        public ActionResult GenerateUserID()
         {
             // Generate a unique user ID
             string userID = Guid.NewGuid().ToString();
@@ -42,7 +40,7 @@ namespace WebAPI.Controllers
         }
 
         [EnableQuery]
-        public IActionResult Get([FromODataUri] string key)
+        public ActionResult Get([FromODataUri] string key)
         {
             var user = _repo.GetUserById(key);
             var userDTO = _Mapper.Map<UserDTO>(user);
@@ -53,23 +51,31 @@ namespace WebAPI.Controllers
         [Route("api/user/users-insert-template")]
         public ActionResult DownloadTemplate()
         {
+            // load datatable References
             var roles = new List<string>() { "teacher", "student" };
             var status = new List<string>() { "block", "active" };
             var _ref = ReferenceTemplate(roles, status);
-            var _udata = InsertTemplate();
+            var _udata = TableTemplate();
 
             using (XLWorkbook wb = new XLWorkbook())
             {
+                // add worksheet to workbook
                 wb.AddWorksheet(_udata, "Insert Users");
                 wb.AddWorksheet(_ref, "Reference");
 
-                var worksheet = wb.Worksheet("Insert Users");
+                // assign worksheets
+                var wsMain = wb.Worksheet("Insert Users");
                 var worksheetRef = wb.Worksheet("Reference");
 
-                worksheet.Column(6).SetDataValidation().List(worksheetRef.Range("A2:A4"), true);
-                worksheet.Column(7).SetDataValidation().List(worksheetRef.Range("B2:B4"), true);
+                // set validations to wsMain
+                wsMain.Column(6).SetDataValidation().List(worksheetRef.Range("A2:A4"), true);
+                wsMain.Column(7).SetDataValidation().List(worksheetRef.Range("B2:B4"), true);
+                wsMain.Row(1).SetDataValidation().Clear();
+
+                // hide ws references
                 worksheetRef.Hide();
 
+                // save wb
                 using (MemoryStream ms = new MemoryStream())
                 {
                     wb.SaveAs(ms);
@@ -80,10 +86,10 @@ namespace WebAPI.Controllers
         }
 
         [NonAction]
-        private DataTable InsertTemplate()
+        private DataTable TableTemplate()
         {
             DataTable dt = new DataTable();
-            dt.TableName = "Udata";
+            dt.TableName = "Insert Users";
 
             dt.Columns.Add("Fullname", typeof(string));
             dt.Columns.Add("Email", typeof(string));
@@ -163,7 +169,7 @@ namespace WebAPI.Controllers
 
         [HttpPost]
         [Route("api/user/import-users")]
-        public IActionResult UploadFile(IFormFile file)
+        public ActionResult UploadFile(IFormFile file)
         {
             if (file != null && file.Length > 0)
             {
@@ -171,12 +177,12 @@ namespace WebAPI.Controllers
                 using (var workbook = new XLWorkbook(stream))
                 {
                     // Template
-                    DataTable dataTable = InsertTemplate();
+                    DataTable dataTable = TableTemplate();
                     // List error
                     List<string> lsError = new List<string>();
-                    // Get the worksheet from the workbook
+                    // Get the wsMain from the workbook
                     IXLWorksheet worksheet = workbook.Worksheet(1);
-                    // Get the range of cells with data in the worksheet
+                    // Get the range of cells with data in the wsMain
                     IXLRange range = worksheet.RangeUsed();
                     // Validate the column structure
                     DataTable excelDataTable = new DataTable();
@@ -261,7 +267,7 @@ namespace WebAPI.Controllers
             return BadRequest("No file was uploaded.");
         }
 
-        public IActionResult Post([FromBody] UserCreateDTO userCreate)
+        public ActionResult Post([FromBody] UserCreateDTO userCreate)
         {
             if (!ModelState.IsValid)
             {
@@ -273,7 +279,7 @@ namespace WebAPI.Controllers
             return NoContent();
         }
 
-        public IActionResult Put([FromODataUri] string key, [FromBody] UserCreateDTO userDTO)
+        public ActionResult Put([FromODataUri] string key, [FromBody] UserCreateDTO userDTO)
         {
             if (!ModelState.IsValid)
             {
@@ -290,12 +296,12 @@ namespace WebAPI.Controllers
 
         //public IActionResult Delete([FromODataUri] int key)
         //{
-        //    var user = _repo.GetUserById(key);
+        //    var user = _repoG.GetUserById(key);
         //    if (user is null)
         //    {
         //        return BadRequest();
         //    }
-        //    _repo.Delete(user.Id);
+        //    _repoG.Delete(user.Id);
         //    return NoContent();
         //}
     }

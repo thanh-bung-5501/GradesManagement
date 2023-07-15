@@ -16,13 +16,13 @@ $(function () {
     });
 
     $('#btn-import-grades').on('click', function () {
-        $('#formFileSm').val(null);
+        $('#input-file').val(null);
         $('#show-error').empty();
         $('#modal-import-grades').modal('show');
     });
 
     $('#download-template').on('click', function () {
-        //DownloadTemplate();
+        DownloadTemplate();
     });
 });
 
@@ -252,6 +252,41 @@ function RenderGrades() {
                     btnEditDOM + btnDeleteDOM,
                 ]).draw(false);
             });
+        }
+    });
+}
+
+function DownloadTemplate() {
+    console.log("ok");
+    $.ajax({
+        url: 'https://localhost:5000/api/grades/grades-insert-template',
+        method: 'GET',
+        xhrFields: {
+            responseType: 'blob',
+        },
+        success: function (response) {
+            console.log("t");
+
+            var blob = new Blob([response], {
+                type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            });
+
+            //Create a download link for the Excel file
+            var link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            // Set the file name
+            link.download = `template_insert_grades_${Date.now()}.xlsx`;
+            link.target = '_blank';
+
+            link.click();
+            URL.revokeObjectURL(link);
+            link.remove();
+
+            showToastSuccess('Download template successfully!');
+        },
+        error: function (error) {
+            //showToastFail(error.status);
+            console.log("f");
         }
     });
 }

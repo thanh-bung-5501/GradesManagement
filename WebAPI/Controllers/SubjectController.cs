@@ -19,7 +19,7 @@ namespace WebAPI.Controllers
         }
 
         [EnableQuery]
-        public IActionResult Get()
+        public ActionResult Get()
         {
             var subjects = _repo.GetSubjects();
             var subjectDTOs = _Mapper.Map<List<SubjectDTO>>(subjects);
@@ -27,14 +27,14 @@ namespace WebAPI.Controllers
         }
 
         [EnableQuery]
-        public IActionResult Get([FromODataUri] int key)
+        public ActionResult Get([FromODataUri] int key)
         {
             var subject = _repo.GetSubjectById(key);
             var subjectDTO = _Mapper.Map<SubjectDTO>(subject);
             return Ok(subjectDTO);
         }
 
-        public IActionResult Post([FromBody] SubjectCreateDTO subjectCreate)
+        public ActionResult Post([FromBody] SubjectCreateDTO subjectCreate)
         {
             if (!ModelState.IsValid)
             {
@@ -45,7 +45,7 @@ namespace WebAPI.Controllers
             return NoContent();
         }
 
-        public IActionResult Put([FromODataUri] int key, [FromBody] SubjectEditDTO subjectEdit)
+        public ActionResult Put([FromODataUri] int key, [FromBody] SubjectEditDTO subjectEdit)
         {
             if (!ModelState.IsValid)
             {

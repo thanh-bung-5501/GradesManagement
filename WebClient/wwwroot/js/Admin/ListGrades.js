@@ -53,7 +53,7 @@ function Toast({ type, body }) {
         toastTitle.removeClass();
         toastTitle.addClass('text-success');
         toastTitle.html(`
-            <span class="bi bi-check-circle-fill"></span>
+            <span class="fa-solid fa-circle-check"></span>
             <strong class="me-auto">Success</strong>
         `);
 
@@ -64,7 +64,7 @@ function Toast({ type, body }) {
         toastTitle.removeClass();
         toastTitle.addClass('text-danger');
         toastTitle.html(`
-            <span class="bi bi-x-circle-fill"></span>
+            <span class="fa-solid fa-circle-xmark"></span>
             <strong class="me-auto">Error</strong>
         `);
 
@@ -257,7 +257,6 @@ function RenderGrades() {
 }
 
 function DownloadTemplate() {
-    console.log("ok");
     $.ajax({
         url: 'https://localhost:5000/api/grades/grades-insert-template',
         method: 'GET',
@@ -265,8 +264,6 @@ function DownloadTemplate() {
             responseType: 'blob',
         },
         success: function (response) {
-            console.log("t");
-
             var blob = new Blob([response], {
                 type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
             });
@@ -285,8 +282,7 @@ function DownloadTemplate() {
             showToastSuccess('Download template successfully!');
         },
         error: function (error) {
-            //showToastFail(error.status);
-            console.log("f");
+            showToastFail(error.status);
         }
     });
 }

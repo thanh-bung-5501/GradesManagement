@@ -68,9 +68,14 @@ namespace WebAPI.Controllers
                 var worksheetRef = wb.Worksheet("Reference");
 
                 // set validations to wsMain
-                wsMain.Column(6).SetDataValidation().List(worksheetRef.Range("A2:A4"), true);
-                wsMain.Column(7).SetDataValidation().List(worksheetRef.Range("B2:B4"), true);
-                wsMain.Row(1).SetDataValidation().Clear();
+                wsMain.Range("F2:F51").SetDataValidation().List(worksheetRef.Range("A2:A4"), true);
+                wsMain.Range("G2:G51").SetDataValidation().List(worksheetRef.Range("B2:B4"), true);
+                wsMain.Columns().AdjustToContents();
+                wsMain.Column(1).Width = 20;
+                wsMain.Column(2).Width = 20;
+
+                worksheetRef.Protect("123456");
+                worksheetRef.Columns().AdjustToContents();
 
                 // hide ws references
                 worksheetRef.Hide();
@@ -98,7 +103,7 @@ namespace WebAPI.Controllers
             dt.Columns.Add("Address", typeof(string));
             dt.Columns.Add("Role", typeof(string));
             dt.Columns.Add("Status", typeof(string));
-            for (int i = 0; i < 20; i++)
+            for (int i = 1; i <= 50; i++)
             {
                 dt.Rows.Add("", "", "", "", "", "", "");
             }

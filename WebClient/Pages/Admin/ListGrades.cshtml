@@ -34,12 +34,7 @@
                 <div class="modal-body">
                     <div class="mb-3">
                         <label for="input-file" class="form-label">File input (.xlsx)</label>
-                        <div class="input-group mb-3">
-                            <input class="form-control form-control-sm" id="input-file" name="file" type="file" accept=".xlsx" aria-describedby="button-addon2">
-                            <div class="input-group-append">
-                                <button class="btn btn-primary btn-sm" id="download-template"><i class="fa-solid fa-file-arrow-down"></i> Get template</button>
-                            </div>
-                        </div>
+                        <input class="form-control form-control-sm" id="input-file" name="file" type="file" accept=".xlsx">
                     </div>
                     <div id="show-error" class="text-danger"></div>
                 </div>
@@ -106,7 +101,7 @@
                 <select id="edit-grade-category-id" style="width: 100%"></select>
                 @*Input Grade*@
                 <label class="col-form-label-sm">Grade</label>
-                <input id="edit-grade" class="form-control form-control-sm" type="number" />
+                <input id="edit-grade" class="form-control form-control-sm" type="number" step="any" min="0" max="10" />
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
@@ -120,6 +115,7 @@
 <div class="d-flex justify-content-between mb-2">
     <button id="btn-add-grade" class="btn btn-primary btn-sm"><i class="fa-solid fa-square-plus"></i> Add Grade</button>
     <div>
+        <button class="btn btn-primary btn-sm" id="download-template"><i class="fa-solid fa-file-arrow-down"></i> Get template</button>
         <button class="btn btn-primary btn-sm" id="btn-import-grades"><i class="fa-solid fa-file-import"></i> Import Grades</button>
         <button class="btn btn-primary btn-sm"><i class="fa-solid fa-file-export"></i> Export Grades</button>
     </div>

@@ -34,12 +34,7 @@
                 <div class="modal-body">
                     <div class="mb-3">
                         <label for="input-file" class="form-label">File input (.xlsx)</label>
-                        <div class="input-group mb-3">
-                            <input class="form-control form-control-sm" id="input-file" name="file" type="file" accept=".xlsx" aria-describedby="button-addon2">
-                            <div class="input-group-append">
-                                <button class="btn btn-primary btn-sm" id="download-template"><i class="fa-solid fa-file-arrow-down"></i> Get template</button>
-                            </div>
-                        </div>
+                        <input class="form-control form-control-sm" id="input-file" name="file" type="file" accept=".xlsx">
                     </div>
                     <div id="show-error" class="text-danger"></div>
                 </div>
@@ -117,8 +112,8 @@
                             <label class="col-form-label-sm">Status</label>
                             <select id="add-ustatus" class="form-select form-select-sm">
                                 <optgroup label="choose status">
-                                    <option value="0">active</option>
-                                    <option value="1" selected>block</option>
+                                    <option value="0" selected>block</option>
+                                    <option value="1">active</option>
                                 </optgroup>
                             </select>
                             <span class="text-danger small"></span>
@@ -202,6 +197,7 @@
 <div class="d-flex justify-content-between mb-2">
     <button id="btn-add-user" class="btn btn-primary btn-sm"><i class="fa-solid fa-user-plus"></i> Add User</button>
     <div>
+        <button class="btn btn-primary btn-sm" id="download-template"><i class="fa-solid fa-file-arrow-down"></i> Get template</button>
         <button class="btn btn-primary btn-sm" id="btn-import-users"><i class="fa-solid fa-file-import"></i> Import Users</button>
         <button class="btn btn-primary btn-sm" id="export-users"><i class="fa-solid fa-file-export"></i> Export Users</button>
     </div>

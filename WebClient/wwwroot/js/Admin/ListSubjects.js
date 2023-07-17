@@ -67,7 +67,7 @@ function Toast({ type, body }) {
         toastTitle.removeClass();
         toastTitle.addClass('text-success');
         toastTitle.html(`
-            <span class="bi bi-check-circle-fill"></span>
+            <span class="fa-solid fa-circle-check"></span>
             <strong class="me-auto">Success</strong>
         `);
 
@@ -78,7 +78,7 @@ function Toast({ type, body }) {
         toastTitle.removeClass();
         toastTitle.addClass('text-danger');
         toastTitle.html(`
-            <span class="bi bi-x-circle-fill"></span>
+            <span class="fa-solid fa-circle-xmark"></span>
             <strong class="me-auto">Error</strong>
         `);
 

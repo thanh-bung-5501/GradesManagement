@@ -12,6 +12,7 @@ namespace DataAccess
         }
 
         public static List<User> GetUsers() => _context.User.Include(x => x.Role).ToList();
+        public static List<User> GetStudentsActive() => _context.User.Include(x => x.Role).Where(x => x.RoleId == 3 && x.Status == 1).ToList();
 
         public static User GetUserById(string id) => _context.User.SingleOrDefault(x => x.Id == id)!;
 

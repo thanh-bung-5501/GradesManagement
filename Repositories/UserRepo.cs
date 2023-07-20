@@ -6,6 +6,7 @@ namespace Repositories
     public class UserRepo : IUserRepo
     {
         public List<User> GetUsers() => UserDAO.GetUsers();
+        public List<User> GetStudentsActive() => UserDAO.GetStudentsActive();
         public User GetUserById(string id) => UserDAO.GetUserById(id);
         public void Create(User x) => UserDAO.Create(x);
         public void BulkCreate(List<User> x) => UserDAO.BulkCreate(x);

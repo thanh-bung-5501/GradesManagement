@@ -24,6 +24,16 @@ $(function () {
     $('#download-template').on('click', function () {
         DownloadTemplate();
     });
+
+    $('#export-grades').on('click', function () {
+        ExportGrades();
+    });
+
+    $('#form-import-grades').on('submit', function (event) {
+        event.preventDefault();
+        var formData = new FormData($('#form-import-grades')[0]);
+        ImportGrades(formData);
+    });
 });
 
 function showToastSuccess(contentBody) {
@@ -237,8 +247,10 @@ function RenderGrades() {
             var grades = listGrades.value;
             // Create view data grades
             $.each(grades, function (index, grade) {
-                var btnEditDOM = `<button class="btn btn-primary mx-2 btn-sm" onClick="ShowModalEdit(${grade.StudentId}, ${grade.SubjectId}, ${grade.GradeCategoryId});"><i class="fa-solid fa-pen-to-square"></i> Edit</button>`;
-                var btnDeleteDOM = `<button class="btn btn-danger btn-sm" onClick="DeleteProduct(${grade.Id})"><i class="fa-solid fa-trash"></i> Delete</button>`;
+                var btnAction = `<div class="d-flex">
+                    <button class="btn btn-primary mx-2 btn-sm" onClick="ShowModalEdit('${grade.StudentId}', ${grade.SubjectId}, ${grade.GradeCategoryId});"><i class="fa-solid fa-pen-to-square"></i> Edit</button>
+                    <button class="btn btn-danger btn-sm" onClick="DeleteProduct(${grade.Id})"><i class="fa-solid fa-trash"></i> Delete</button>
+                </div>`;
 
                 table.row.add([
                     grade.StudentId,
@@ -249,7 +261,7 @@ function RenderGrades() {
                     ParseDateTime(grade.ModifiedOn),
                     grade.CreatedBy,
                     grade.ModifiedBy,
-                    btnEditDOM + btnDeleteDOM,
+                    btnAction,
                 ]).draw(false);
             });
         }
@@ -283,6 +295,66 @@ function DownloadTemplate() {
         },
         error: function (error) {
             showToastFail(error.status);
+        }
+    });
+}
+
+function ExportGrades() {
+    $.ajax({
+        url: 'https://localhost:5000/api/grades/export-grades',
+        method: 'GET',
+        xhrFields: {
+            responseType: 'blob',
+        },
+        success: function (response) {
+            var blob = new Blob([response], {
+                type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            });
+
+            //Create a download link for the Excel file
+            var link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            // Set the file name
+            link.download = `export_grades_${Date.now()}.xlsx`;
+            link.target = '_blank';
+            link.click();
+            URL.revokeObjectURL(link);
+            link.remove();
+
+            showToastSuccess('Export grades successfully!');
+        },
+        error: function (error) {
+            showToastFail(error.status);
+        }
+    });
+}
+
+function ImportGrades(formData) {
+    $('#show-error').empty();
+    $.ajax({
+        url: 'https://localhost:5000/api/grades/import-grades', // Replace with your Web API endpoint URL
+        type: 'POST',
+        data: formData,
+        enctype: 'multipart/form-data',
+        processData: false,
+        contentType: false,
+        success: function (response) {
+            RenderGrades();
+            // Handle the successful response
+            showToastSuccess('Import grades successfully!');
+            $('#modal-import-grades').modal('hide');
+        },
+        error: function (xhr) {
+            var error = xhr.responseJSON;
+            if (Array.isArray(error)) {
+                var rs = '';
+                $.each(error, function (err) {
+                    rs += error[err] + "<br/>";
+                });
+                $('#show-error').html(`${rs}`);
+            } else {
+                $('#show-error').html(`${error.message}`);
+            }
         }
     });
 }

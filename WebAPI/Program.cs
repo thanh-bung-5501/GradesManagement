@@ -76,15 +76,14 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+
+    #region Config-JQuery(AJAX)
+    app.UseCors("AllowSpecificOrigin");
+    #endregion
 }
 
-#region Config-JQuery(AJAX)
-
-app.UseCors("AllowSpecificOrigin");
-
-#endregion
-
 app.UseHttpsRedirection();
+
 
 app.UseAuthorization();
 

@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using BusinessObjects;
 using ClosedXML.Excel;
+using DocumentFormat.OpenXml.Office2010.Excel;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OData.Query;
 using Microsoft.AspNetCore.OData.Routing.Controllers;
@@ -30,12 +31,214 @@ namespace WebAPI.Controllers
             return Ok(gradeDTOs);
         }
 
+
+        [HttpGet]
+        [Route("api/grades/export-grades")]
+        public ActionResult ExportGrades()
+        {
+            var _gData = GetGradesData();
+            using (XLWorkbook wb = new XLWorkbook())
+            {
+                wb.AddWorksheet(_gData, "Grades Recods");
+                var wsMain = wb.Worksheet("Grades Recods");
+                wsMain.Columns().AdjustToContents();
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    wb.SaveAs(ms);
+                    return File(ms.ToArray(),
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Users Data");
+                };
+            }
+        }
+
+        [NonAction]
+        private DataTable GetGradesData()
+        {
+            DataTable dt = new DataTable();
+            dt.TableName = "Grades data";
+            dt.Columns.Add("StudentId", typeof(string));
+            dt.Columns.Add("StudentName", typeof(string));
+            dt.Columns.Add("SubjectCode", typeof(string));
+            dt.Columns.Add("GradeCategory", typeof(string));
+            dt.Columns.Add("Grade", typeof(string));
+            dt.Columns.Add("CreatedOn", typeof(string));
+            dt.Columns.Add("ModifiedOn", typeof(string));
+            dt.Columns.Add("CreatedBy", typeof(string));
+            dt.Columns.Add("ModifiedBy", typeof(string));
+
+            var _list = _repoG.GetGrades();
+            if (_list.Count > 0)
+            {
+                _list.ForEach(item =>
+                {
+                    dt.Rows.Add(item.StudentId, item.User.Fullname, item.Subject.Code, item.GradeCategory.Name,
+                        item.Grade, item.CreatedOn, item.ModifiedOn, item.CreatedBy, item.ModifiedBy);
+                });
+            }
+            return dt;
+        }
+
+        [HttpPost]
+        [Route("api/grades/import-grades")]
+        public ActionResult UploadFile(IFormFile file)
+        {
+            if (file != null && file.Length > 0)
+            {
+                using (var stream = file.OpenReadStream())
+                using (var workbook = new XLWorkbook(stream))
+                {
+                    // Template
+                    DataTable dataTable = TableTemplate();
+                    // List error
+                    List<string> lsError = new List<string>();
+                    // Get the wsMain from the workbook
+                    IXLWorksheet wsMain = workbook.Worksheet(1);
+                    IXLWorksheet wsRefStudents = workbook.Worksheet(2);
+                    IXLWorksheet wsRefSubjects = workbook.Worksheet(3);
+                    IXLWorksheet wsRefGradeCategories = workbook.Worksheet(4);
+                    // Validate the sheet names
+                    if (wsMain.Name != "Insert Grades" || wsRefStudents.Name != "Reference Students"
+                        || wsRefSubjects.Name != "Reference Subjects" || wsRefGradeCategories.Name != "Reference Grade Categories")
+                        return BadRequest($"[File input] Sheet names mismatch [Template] sheet names.");
+
+                    // Get the rangeWsMain of cells with data in the wsMain
+                    IXLRange rangeWsMain = wsMain.RangeUsed();
+                    IXLRange rangeWsStudents = wsRefStudents.RangeUsed();
+                    IXLRange rangeWsSubjects = wsRefSubjects.RangeUsed();
+                    IXLRange rangeWsGradeCats = wsRefGradeCategories.RangeUsed();
+
+                    DataTable dTableMain = new DataTable();
+
+                    // Add columns to the dTableMain based on the Excel file headers
+                    foreach (IXLCell cell in rangeWsMain.FirstRow().CellsUsed()) dTableMain.Columns.Add(cell.Value.ToString()); ;
+
+                    // Validate match sheets reference
+                    var totalStudents = _repoU.GetStudentsActive();
+                    var totalSubjects = _repoS.GetSubjects();
+                    var totalGradeCats = _repoGC.GetGradeCategories();
+
+                    if (totalStudents.Count != rangeWsStudents.RowsUsed().Skip(1).Count()
+                        || totalSubjects.Count != rangeWsSubjects.RowsUsed().Skip(1).Count()
+                        || totalGradeCats.Count != rangeWsGradeCats.RowsUsed().Skip(1).Count())
+                        return BadRequest($"(File input) [Sheets Reference] is the old template. Please download the new template!");
+
+                    // Validate the column count and names
+                    if (dataTable.Columns.Count != dTableMain.Columns.Count)
+                    {
+                        int countCol = dataTable.Columns.Count;
+                        int countCol2 = dTableMain.Columns.Count;
+                        // Column count does not match
+                        return BadRequest($"(Template[{countCol}]-File input[{countCol2}]) Column count mismatch.");
+                    }
+
+                    // Validate match column
+                    for (int i = 0; i < dataTable.Columns.Count; i++)
+                    {
+                        if (dataTable.Columns[i].ColumnName != dTableMain.Columns[i].ColumnName)
+                        {
+                            string nameCol = dataTable.Columns[i].ColumnName;
+                            string nameCol2 = dTableMain.Columns[i].ColumnName;
+                            // Column name does not match
+                            return BadRequest($"(Tempate[{nameCol}]-File input[{nameCol2}]) Column name mismatch.");
+                        }
+                    }
+
+                    // assign data to List
+                    List<GradesCreateDTO> gradeDTOs = new List<GradesCreateDTO>();
+
+                    bool emptyTable = true;
+                    // Validate the row data
+                    foreach (IXLRangeRow row in rangeWsMain.RowsUsed().Skip(1)) // Skip the header row
+                    {
+                        for (int i = 0; i < row.Cells().Count(); i += 2)
+                        {
+                            // pass empty row
+                            if (row.Cell(1).Value.IsBlank && row.Cell(3).Value.IsBlank
+                                && row.Cell(5).Value.IsBlank && row.Cell(7).Value.IsBlank) break;
+                            else // not empty row
+                            {
+                                // Cell null or empty
+                                if (row.Cell(i + 1).Value.IsBlank)
+                                {
+                                    IXLCell cell = row.Cell(i + 1);
+                                    lsError.Add($"({cell.Address}) Cell value is either null or empty.");
+                                }
+                                // check empty table
+                                if (emptyTable == true) emptyTable = false;
+                            }
+                        }
+
+                        // Validate conflict data in db
+                        if (!row.Cell(1).Value.IsBlank && !row.Cell(3).Value.IsBlank
+                                && !row.Cell(5).Value.IsBlank && !row.Cell(7).Value.IsBlank)
+                        {
+                            string stuId = row.Cell(1).Value.GetText();
+                            int subId = int.Parse(row.Cell(3).Value.GetText());
+                            int gradeCatId = int.Parse(row.Cell(5).Value.GetText());
+                            decimal grade = decimal.Parse(row.Cell(7).Value.ToString());
+                            var found = _repoG.GetGradeByKeys(stuId, subId, gradeCatId);
+                            if (found != null)
+                            {
+                                lsError.Add($"(File input[{row.RangeAddress}]) Student({found.StudentId}) has been graded ({found.Grade}) in {found.GradeCategory.Name} [{found.Subject.Code}].");
+                            }
+                            else
+                            {
+                                var gradesDTO = new GradesCreateDTO
+                                {
+                                    StudentId = stuId,
+                                    SubjectId = subId,
+                                    GradeCategoryId = gradeCatId,
+                                    Grade = grade,
+                                };
+                                gradeDTOs.Add(gradesDTO);
+                            }
+                        }
+                    }
+
+                    // Validate empty table
+                    if (emptyTable == true) return BadRequest("File input does not have data.");
+
+                    // Validate Conflict 
+                    if (gradeDTOs.GroupBy(x => new { x.StudentId, x.SubjectId, x.GradeCategoryId }).Any(c => c.Count() > 1))
+                    {
+                        var valueDuplicate = gradeDTOs.GroupBy(x => new { x.StudentId, x.SubjectId, x.GradeCategoryId }).Where(g => g.Count() > 1).Select(y => y.Key);
+                        foreach (var item in valueDuplicate) lsError.Add($"(File input) A duplicate data {item}");
+                    }
+
+                    // Have error
+                    if (lsError.Count != 0) return BadRequest(lsError);
+                    // Not have error
+                    else
+                    {
+                        try
+                        {
+                            foreach (var item in gradeDTOs)
+                            {
+                                item.CreatedOn = DateTime.Now;
+                                item.ModifiedOn = DateTime.Now;
+                                item.CreatedBy = "Admin";
+                                item.ModifiedBy = "Admin";
+                            }
+                            List<Grades> grades = _Mapper.Map<List<Grades>>(gradeDTOs);
+                            _repoG.BulkCreate(grades);
+                            return NoContent();
+                        }
+                        catch (Exception e)
+                        {
+                            return BadRequest(new { message = $"{e.Message}" });
+                        }
+                    }
+                }
+            }
+            return BadRequest("No file was uploaded.");
+        }
+
         [HttpGet]
         [Route("api/grades/grades-insert-template")]
         public ActionResult DownloadTemplate()
         {
             // load datatable References
-            var _refStudents = ReferenceStudents(_repoU.GetUsers());
+            var _refStudents = ReferenceStudents(_repoU.GetStudentsActive());
             var _refSubjects = ReferenceSubjects(_repoS.GetSubjects());
             var _refGradeCategories = ReferenceGradeCategories(_repoGC.GetGradeCategories());
 
@@ -47,7 +250,7 @@ namespace WebAPI.Controllers
 
             using (XLWorkbook wb = new XLWorkbook())
             {
-                // add worksheet to workbook
+                // add wsMain to workbook
                 wb.AddWorksheet(_udata, "Insert Grades");
                 wb.AddWorksheet(_refStudents, "Reference Students");
                 wb.AddWorksheet(_refSubjects, "Reference Subjects");
@@ -66,7 +269,7 @@ namespace WebAPI.Controllers
                 wsMain.Range("G2:G51").SetDataValidation().Decimal.Between(0, 10);
                 wsMain.Range("G2:G51").SetDataValidation().ErrorTitle = "Validation Error";
                 wsMain.Range("G2:G51").SetDataValidation().ErrorMessage = "Please enter a number between 0 and 10.";
-                // assign vlookup range
+                // assign vlookup rangeWsMain
                 var lookupRangeStudents = wsStudents.Range("A2:B" + (rowRefStudents + 1));
                 var lookupRangeSubjects = wsSubjects.Range("A2:B" + (rowRefSubjects + 1));
                 var lookupRangeGradeCategories = wsGradeCategories.Range("A2:B" + (rowRefGradeCategories + 1));

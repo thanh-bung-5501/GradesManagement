@@ -17,8 +17,9 @@ namespace WebAPI.Mapper
             CreateMap<SubjectCreateDTO, Subject>().ReverseMap();
             CreateMap<SubjectEditDTO, Subject>().ReverseMap();
 
-            CreateMap<Grades, GradesDTO>();
+            CreateMap<Grades, GradesDTO>().ReverseMap();
             CreateMap<GradeCategory, GradeCategoryDTO>();
+            CreateMap<GradesCreateDTO, Grades>();
         }
     }
 }

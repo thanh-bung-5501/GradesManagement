@@ -151,7 +151,7 @@ namespace WebAPI.Controllers
         private DataTable GetUserData()
         {
             DataTable dt = new DataTable();
-            dt.TableName = "Udata";
+            dt.TableName = "Users data";
             dt.Columns.Add("Id", typeof(string));
             dt.Columns.Add("Fullname", typeof(string));
             dt.Columns.Add("Email", typeof(string));

@@ -5,6 +5,7 @@ namespace Repositories
     public interface IUserRepo
     {
         List<User> GetUsers();
+        List<User> GetStudentsActive();
         User GetUserById(string id);
         void Create(User x);
         void BulkCreate(List<User> x);

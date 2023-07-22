@@ -162,7 +162,7 @@ function ShowModalEdit(id) {
 
             //Load select listTeachers
             $.ajax({
-                url: `https://localhost:5000/odata/User?$expand=role&$filter=Role/Name eq 'teacher'`,
+                url: `https://localhost:5000/odata/User?$expand=role&$filter=Role/Id eq 2`,
                 type: "GET",
                 contentType: "application/json; charset=utf-8",
                 dataType: "json",

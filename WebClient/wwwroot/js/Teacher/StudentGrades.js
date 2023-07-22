@@ -99,7 +99,7 @@ function ParseDateTime(inputDate) {
 
 function LoadSelectSearchStudent(selectorSelectSearch, selectorModal, value) {
     $.ajax({
-        url: `https://localhost:5000/odata/User?$expand=role&$filter=Role/Id eq 3`,
+        url: `https://localhost:5000/odata/User?$expand=role&$filter=Role/ID eq 3`,
         type: "GET",
         contentType: "application/json; charset=utf-8",
         dataType: "json",
@@ -130,30 +130,47 @@ function LoadSelectSearchStudent(selectorSelectSearch, selectorModal, value) {
 
 function LoadSelecSearchSubject(selectorSelectSearch, selectorModal, value) {
     $.ajax({
-        url: `https://localhost:5000/odata/subject?$expand=User`,
-        type: "GET",
-        contentType: "application/json; charset=utf-8",
-        dataType: "json",
-        success: function (result, status, xhr) {
-            $(selectorSelectSearch).append(`<optgroup label="[Id] Code"></optgroup>`);
-            $.each(result.value, function (index, subject) {
-                $(selectorSelectSearch).append(`<option value="${subject.Id}">[${subject.Id}] ${subject.Code}</option>`);
+        url: 'https://localhost:5000/api/Authenticate/user/info',
+        type: 'GET',
+        dataType: 'json',
+        beforeSend: function (xhr) {
+            // Set the Bearer token in the Authorization header
+            xhr.setRequestHeader('Authorization', 'Bearer ' + localStorage.getItem('token'));
+        },
+        success: function (response) {
+            if (response.id) {
+                $.ajax({
+                    url: `https://localhost:5000/odata/subject?$expand=User&$filter=TeacherId eq '${response.id}'`,
+                    type: "GET",
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    success: function (result, status, xhr) {
+                        $(selectorSelectSearch).append(`<optgroup label="[Id] Code"></optgroup>`);
+                        $.each(result.value, function (index, subject) {
+                            $(selectorSelectSearch).append(`<option value="${subject.Id}">[${subject.Id}] ${subject.Code}</option>`);
 
-            });
+                        });
 
-            // select search
-            $(selectorSelectSearch).select2({
-                theme: "classic",
-                minimumResultsForSearch: 1,
-                width: 'resolve',
-                dropdownParent: $(selectorModal),
-                placeholder: "Select a subject..."
-            });
-            // support show placeholder
-            $(selectorSelectSearch).val(value).trigger('change');
+                        // select search
+                        $(selectorSelectSearch).select2({
+                            theme: "classic",
+                            minimumResultsForSearch: 1,
+                            width: 'resolve',
+                            dropdownParent: $(selectorModal),
+                            placeholder: "Select a subject..."
+                        });
+                        // support show placeholder
+                        $(selectorSelectSearch).val(value).trigger('change');
+                    },
+                    error: function (xhr, status, error) {
+                        console.log(xhr);
+                    }
+                });
+            }
         },
         error: function (xhr, status, error) {
-            console.log(xhr);
+            // Handle errors, if any
+            console.log('Error:', xhr);
         }
     });
 }
@@ -242,34 +259,56 @@ function ShowModalEdit(studentId, subjectId, gradeCatId) {
 }
 
 function RenderGrades() {
-    table.clear().draw(false);
     $.ajax({
-        url: `https://localhost:5000/odata/grades?$expand=User,GradeCategory,Subject&count=true`,
-        type: "GET",
+        url: 'https://localhost:5000/api/Authenticate/user/info',
+        type: 'GET',
         dataType: 'json',
-        success: function (listGrades) {
-            var grades = listGrades.value;
-            // Create view data grades
-            $.each(grades, function (index, grade) {
-                var btnAction = `<div class="d-flex">
-                    <button class="btn btn-primary mx-2 btn-sm" onClick="ShowModalEdit('${grade.StudentId}', ${grade.SubjectId}, ${grade.GradeCategoryId});"><i class="fa-solid fa-pen-to-square"></i> Edit</button>
-                    <button class="btn btn-danger btn-sm" onClick="DeleteProduct(${grade.Id})"><i class="fa-solid fa-trash"></i> Delete</button>
-                </div>`;
+        beforeSend: function (xhr) {
+            // Set the Bearer token in the Authorization header
+            xhr.setRequestHeader('Authorization', 'Bearer ' + localStorage.getItem('token'));
+        },
+        success: function (response) {
+            if (response.id) {
+                table.clear().draw(false);
+                $.ajax({
+                    url: `https://localhost:5000/odata/grades?$expand=User,GradeCategory,Subject&$filter=Subject/TeacherId eq '${response.id}'`,
+                    type: "GET",
+                    dataType: 'json',
+                    success: function (listGrades) {
+                        var grades = listGrades.value;
+                        // Create view data grades
+                        $.each(grades, function (index, grade) {
+                            var btnAction = `<div class="d-flex">
+                                <button class="btn btn-primary mx-2 btn-sm" onClick="ShowModalEdit('${grade.StudentId}', ${grade.SubjectId}, ${grade.GradeCategoryId});"><i class="fa-solid fa-pen-to-square"></i> Edit</button>
+                            </div>`;
 
-                table.row.add([
-                    grade.StudentId,
-                    grade.Subject.Code,
-                    grade.GradeCategory.Name,
-                    grade.Grade,
-                    ParseDateTime(grade.CreatedOn),
-                    ParseDateTime(grade.ModifiedOn),
-                    grade.CreatedBy,
-                    grade.ModifiedBy,
-                    btnAction,
-                ]).draw(false);
-            });
+                            table.row.add([
+                                grade.StudentId,
+                                grade.Subject.Code,
+                                grade.GradeCategory.Name,
+                                grade.Grade,
+                                ParseDateTime(grade.CreatedOn),
+                                ParseDateTime(grade.ModifiedOn),
+                                grade.CreatedBy,
+                                grade.ModifiedBy,
+                                btnAction,
+                            ]).draw(false);
+                        });
+                    }
+                });
+
+            } else {
+                console.log("Id is null");
+            }
+        },
+        error: function (xhr, status, error) {
+            // Handle errors, if any
+            console.log('Error:', xhr);
         }
     });
+
+
+
 }
 
 function DownloadTemplate() {

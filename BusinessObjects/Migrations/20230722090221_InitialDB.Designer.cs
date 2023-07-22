@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BusinessObjects.Migrations
 {
     [DbContext(typeof(MyDBcontext))]
-    [Migration("20230720150257_UpdateUserAndSubject")]
-    partial class UpdateUserAndSubject
+    [Migration("20230722090221_InitialDB")]
+    partial class InitialDB
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {

@@ -48,6 +48,7 @@ namespace WebAPI.Controllers
                 var authClaims = new List<Claim>
                 {
                     new Claim("UserId", user.Id),
+                    new Claim("UserName", user.Fullname),
                     new Claim(ClaimTypes.Email, user.Email),
                     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                     new Claim(ClaimTypes.Role, user.Role.Name),
@@ -66,24 +67,27 @@ namespace WebAPI.Controllers
 
         [Authorize]
         [HttpGet]
-        [Route("user/role")]
-        public IActionResult GetUserRoleByToken()
+        [Route("user/info")]
+        public IActionResult GetUserInfoByToken()
         {
             // Get the user's Claims from the authenticated User
             var user = HttpContext.User;
-
-            // Retrieve the 'role' claim from the user's Claims
-            var roleClaim = user.FindFirst(c => c.Type.Equals(ClaimTypes.Role));
-
-            if (roleClaim != null)
+            if (user != null)
             {
-                var userRole = roleClaim.Value;
-                return Ok(new { role = userRole });
+                var roleClaim = user.FindFirst(c => c.Type.Equals(ClaimTypes.Role))!;
+                var uIdClaim = user.FindFirst(c => c.Type.Equals("UserId"))!;
+                var uNameClaim = user.FindFirst(c => c.Type.Equals("UserName"))!;
+                return Ok(new
+                {
+                    id = uIdClaim.Value,
+                    name = uNameClaim.Value,
+                    role = roleClaim.Value
+                });
             }
             else
             {
-                // Role claim not found, handle as needed (e.g., return an error response)
-                return BadRequest("User role not found in token.");
+                // user's Claims not found
+                return BadRequest("User not found in token.");
             }
         }
     }

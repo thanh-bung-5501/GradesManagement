@@ -1,8 +1,8 @@
 ﻿@page
-@model WebClient.Pages.Manager.ListGradesModel
+@model WebClient.Pages.Teacher.StudentGradesModel
 
 @{
-    ViewData["Title"] = "List Grades";
+    ViewData["Title"] = "Student Grades";
 }
 @*Modal Toast*@
 <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 999">
@@ -73,7 +73,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary btn-sm" onClick=""><i class="fa-solid fa-floppy-disk"></i> Save</button>
+                <button type="button" class="btn btn-primary btn-sm" onclick=""><i class="fa-solid fa-floppy-disk"></i> Save</button>
             </div>
         </div>
     </div>
@@ -111,7 +111,7 @@
     </div>
 </div>
 
-<h3>List Grades</h3>
+<h3>Student Grades</h3>
 <div class="d-flex justify-content-between mb-2">
     <button id="btn-add-grade" class="btn btn-primary btn-sm"><i class="fa-solid fa-square-plus"></i> Add Grade</button>
     <div>
@@ -142,5 +142,5 @@
 <div class="modal-loading"></div>
 
 @section scripts{
-    <script src="~/js/admin/listgrades.js"></script>
+    <script src="~/js/teacher/studentgrades.js"></script>
 }

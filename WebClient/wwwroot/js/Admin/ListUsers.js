@@ -235,7 +235,7 @@ function RenderUsers() {
     table.clear().draw(false);
 
     $.ajax({
-        url: `https://localhost:5000/odata/User?&$expand=Role`,
+        url: `https://localhost:5000/odata/User?$expand=Role`,
         type: "GET",
         dataType: 'json',
         beforeSend: function (xhr) {

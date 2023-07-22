@@ -29,7 +29,7 @@
                 </button>
                 <div id="navbar" class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                 </div>
-                <div id="login-lgout-btn"></div>
+                <div id="login-logout-btn" class="d-flex align-items-center"></div>
             </div>
         </nav>
     </header>
@@ -41,7 +41,7 @@
 
     <footer class="border-top footer text-muted">
         <div class="container">
-            &copy; 2023 - WebClient - <a asp-area="" asp-page="/Privacy">Privacy</a>
+            &copy; SE1611-HE151285-PhamNhatThanh
         </div>
     </footer>
 
@@ -60,7 +60,7 @@
             if (localStorage.getItem('token')) {
                 //Sending the AJAX request
                 $.ajax({
-                    url: 'https://localhost:5000/api/Authenticate/user/role',
+                    url: 'https://localhost:5000/api/Authenticate/user/info',
                     type: 'GET',
                     dataType: 'json',
                     beforeSend: function (xhr) {
@@ -69,7 +69,7 @@
                     },
                     success: function (response) {
                         console.log(response.role);
-                        var link = `<div class="navbar-nav flex-grow-1">
+                        var adminMenu = `<div class="navbar-nav flex-grow-1">
                             <div class="nav-item">
                                 <a class="nav-link text-dark" href="/Homepage" >Home</a>
                             </div>
@@ -87,13 +87,32 @@
                             </div>
                         </div>`;
 
-                        if (response.role === 'admin') {
-                            navbar.html(link);
-                        } else {
-                            navbar.html('');
+                        var teacherMenu = `<div class="navbar-nav flex-grow-1">
+                            <div class="nav-item">
+                                <a class="nav-link text-dark" href="/Homepage" >Home</a>
+                            </div>
+                            <div class="dropdown">
+                                <div class="nav-item nav-link text-dark" id="dropdownMenuButton"
+                                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    Teacher
+                                </div>
+
+                                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                    <a class="dropdown-item" href="/Teacher/ListStudents">List Students</a>
+                                    <a class="dropdown-item" href="/Teacher/MySubjects">My Subjects</a>
+                                    <a class="dropdown-item" href="/Teacher/StudentGrades">Student Grades</a>
+                                </div>
+                            </div>
+                        </div>`;
+
+                        if (response.role === 'Admin') {
+                            navbar.html(adminMenu);
+                        } else if (response.role === 'Teacher') {
+                            navbar.html(teacherMenu);
                         }
 
-                        $('#login-lgout-btn').html(`<a class="nav-link text-dark btn" onClick="Logout();">Logout</a>`);
+                        $('#login-logout-btn').html(`Hello, ${response.name}!&nbsp;&nbsp;
+                            <a class="nav-link text-dark btn" onClick="Logout();">Logout</a>`);
                     },
                     error: function (xhr, status, error) {
                         // Handle errors, if any

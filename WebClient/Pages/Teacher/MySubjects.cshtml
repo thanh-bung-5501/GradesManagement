@@ -1,0 +1,25 @@
+﻿@page
+@model WebClient.Pages.Teacher.MySubjectsModel
+@{
+    ViewData["Title"] = "My Subjects";
+}
+
+<h3>My Subjects</h3><br />
+@*Table*@
+<table class="display compact nowrap" style="width:100%">
+    <thead>
+        <tr>
+            <th scope="col">Subject Id</th>
+            <th scope="col">Subject Code</th>
+            <th scope="col">Subject Name</th>
+            <th scope="col">Teacher</th>
+            <th scope="col">Teacher Email</th>
+        </tr>
+    </thead>
+</table>
+
+@* Loading ajax*@
+<div class="modal-loading"></div>
+@section scripts{
+    <script src="~/js/teacher/mysubjects.js"></script>
+}

@@ -1,0 +1,28 @@
+﻿@page
+@model WebClient.Pages.Teacher.ListStudentsModel
+
+@{
+    ViewData["Title"] = "List Students";
+}
+
+<h3>List Students</h3><br />
+@*Table*@
+<table class="display compact nowrap" style="width:100%">
+    <thead>
+        <tr>
+            <th scope="col">User Id</th>
+            <th scope="col">Fullname</th>
+            <th scope="col">Email</th>
+            <th scope="col">Phone</th>
+            <th scope="col">Address</th>
+            <th scope="col">Status</th>
+        </tr>
+    </thead>
+</table>
+
+@* Loading ajax*@
+<div class="modal-loading"></div>
+
+@section scripts{
+    <script src="~/js/teacher/liststudents.js"></script>
+}

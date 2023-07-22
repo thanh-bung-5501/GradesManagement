@@ -12,7 +12,6 @@ using WebAPI.Models;
 
 namespace WebAPI.Controllers
 {
-    [Authorize(Roles = "admin")]
     public class UserController : ODataController
     {
         private IUserRepo _repo = new UserRepo();
@@ -30,17 +29,7 @@ namespace WebAPI.Controllers
             return Ok(userDTOs);
         }
 
-        [HttpPost]
-        [Route("api/user/generate-user-id")]
-        public ActionResult GenerateUserID()
-        {
-            // Generate a unique user ID
-            string userID = Guid.NewGuid().ToString();
-
-            // Return the generated ID in the response
-            return Ok(new { id = userID });
-        }
-
+        [Authorize(Roles = "Admin,Teacher")]
         [EnableQuery]
         public ActionResult Get([FromODataUri] string key)
         {
@@ -49,6 +38,7 @@ namespace WebAPI.Controllers
             return Ok(userDTO);
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         [Route("api/user/users-insert-template")]
         public ActionResult DownloadTemplate()
@@ -132,6 +122,7 @@ namespace WebAPI.Controllers
             return validationTable;
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         [Route("api/user/export-users")]
         public ActionResult ExportUsers()
@@ -174,6 +165,7 @@ namespace WebAPI.Controllers
             return dt;
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         [Route("api/user/import-users")]
         public ActionResult UploadFile(IFormFile file)
@@ -274,6 +266,7 @@ namespace WebAPI.Controllers
             return BadRequest("No file was uploaded.");
         }
 
+        [Authorize(Roles = "Admin")]
         public ActionResult Post([FromBody] UserCreateDTO userCreate)
         {
             if (!ModelState.IsValid)
@@ -286,6 +279,7 @@ namespace WebAPI.Controllers
             return NoContent();
         }
 
+        [Authorize(Roles = "Admin")]
         public ActionResult Put([FromODataUri] string key, [FromBody] UserCreateDTO userDTO)
         {
             if (!ModelState.IsValid)

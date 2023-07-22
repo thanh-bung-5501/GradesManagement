@@ -22,33 +22,14 @@
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container">
-                <a class="navbar-brand" asp-area="" asp-page="/Index">WebClient</a>
+                <h1 class="navbar-brand">WebClient</h1>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <div class="navbar-nav flex-grow-1">
-                        <div class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Index">Home</a>
-                        </div>
-                        <div class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Privacy">Privacy</a>
-                        </div>
-                        <div class="dropdown">
-                            <div class="nav-item nav-link text-dark" id="dropdownMenuButton"
-                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                Admin
-                            </div>
-
-                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                <a class="dropdown-item" asp-area="" asp-page="/Admin/ListUsers">List Users</a>
-                                <a class="dropdown-item" asp-area="" asp-page="/Admin/ListSubjects">List Subjects</a>
-                                <a class="dropdown-item" asp-area="" asp-page="/Admin/ListGrades">List Grades</a>
-                            </div>
-                        </div>
-                    </div>
+                <div id="navbar" class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                 </div>
+                <div id="login-lgout-btn"></div>
             </div>
         </nav>
     </header>
@@ -71,6 +52,62 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.5/js/dataTables.jqueryui.min.js"></script>
+
+    <script type="text/javascript">
+        var navbar = $('#navbar');
+
+        $(function () {
+            if (localStorage.getItem('token')) {
+                //Sending the AJAX request
+                $.ajax({
+                    url: 'https://localhost:5000/api/Authenticate/user/role',
+                    type: 'GET',
+                    dataType: 'json',
+                    beforeSend: function (xhr) {
+                        // Set the Bearer token in the Authorization header
+                        xhr.setRequestHeader('Authorization', 'Bearer ' + localStorage.getItem('token'));
+                    },
+                    success: function (response) {
+                        console.log(response.role);
+                        var link = `<div class="navbar-nav flex-grow-1">
+                            <div class="nav-item">
+                                <a class="nav-link text-dark" href="/Homepage" >Home</a>
+                            </div>
+                            <div class="dropdown">
+                                <div class="nav-item nav-link text-dark" id="dropdownMenuButton"
+                                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    Admin
+                                </div>
+
+                                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                    <a class="dropdown-item" href="/Admin/ListUsers">List Users</a>
+                                    <a class="dropdown-item" href="/Admin/ListSubjects">List Subjects</a>
+                                    <a class="dropdown-item" href="/Admin/ListGrades">List Grades</a>
+                                </div>
+                            </div>
+                        </div>`;
+
+                        if (response.role === 'admin') {
+                            navbar.html(link);
+                        } else {
+                            navbar.html('');
+                        }
+
+                        $('#login-lgout-btn').html(`<a class="nav-link text-dark btn" onClick="Logout();">Logout</a>`);
+                    },
+                    error: function (xhr, status, error) {
+                        // Handle errors, if any
+                        console.log('Error:', xhr);
+                    }
+                });
+            }
+        });
+
+        function Logout() {
+            localStorage.removeItem('token');
+            window.location.href = '/Login';
+        }
+    </script>
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>

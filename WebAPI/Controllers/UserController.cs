@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using BusinessObjects;
 using ClosedXML.Excel;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OData.Formatter;
 using Microsoft.AspNetCore.OData.Query;
@@ -11,6 +12,7 @@ using WebAPI.Models;
 
 namespace WebAPI.Controllers
 {
+    [Authorize(Roles = "admin")]
     public class UserController : ODataController
     {
         private IUserRepo _repo = new UserRepo();

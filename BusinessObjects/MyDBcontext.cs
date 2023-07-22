@@ -22,6 +22,11 @@ namespace BusinessObjects
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<User>()
+                .HasIndex(x => x.Email).IsUnique();
+            modelBuilder.Entity<Subject>()
+                .HasIndex(x => x.Code).IsUnique();
+
             modelBuilder.Entity<Grades>()
                 .HasKey(grade => new
                 {

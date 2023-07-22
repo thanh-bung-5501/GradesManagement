@@ -1,0 +1,28 @@
+﻿@page
+@model WebClient.Pages.LoginModel
+@{
+    ViewData["Title"] = "Login Page";
+}
+
+<div>
+    <form id="form">
+        <h3>Sign up</h3>
+        <div>
+            <input class="form-control form-control-sm mb-2 w-50" name="fullname" type="text" placeholder="Fullname" required />
+        </div>
+        <div>
+            <input class="form-control form-control-sm mb-2 w-50" name="email" type="email" placeholder="Email" required />
+        </div>
+        <div>
+            <input class="form-control form-control-sm mb-2 w-50" name="password" type="password" placeholder="Password" required />
+        </div>
+        <div>
+            <button class="btn btn-primary" type="submit">Sign up</button>
+            <a class="btn btn-outline-primary" href="/Login">Back to login</a>
+        </div>
+    </form>
+</div>
+
+@section scripts{
+    @*<script src="~/js/login.js"></script>*@
+}

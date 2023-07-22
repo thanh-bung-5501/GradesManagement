@@ -1,10 +1,13 @@
 using BusinessObjects;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.OData;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OData.Edm;
 using Microsoft.OData.ModelBuilder;
+using System.Text;
 using WebAPI.Models;
 
-#region Config-Odata
+// Odata
 static IEdmModel GetEdmModel()
 {
     ODataConventionModelBuilder builder = new();
@@ -16,19 +19,38 @@ static IEdmModel GetEdmModel()
     return builder.GetEdmModel();
 }
 
-#endregion
-
 var builder = WebApplication.CreateBuilder(args);
+ConfigurationManager configuration = builder.Configuration;
 
 // Add services to the container.
 
+// Adding Authentication
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+// Adding Jwt Bearer
+.AddJwtBearer(options =>
+{
+    options.SaveToken = true;
+    options.RequireHttpsMetadata = false;
+    options.TokenValidationParameters = new TokenValidationParameters()
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidIssuer = configuration["JWT:ValidIssuer"],
+        ValidAudience = configuration["JWT:ValidAudience"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWT:Secret"]))
+    };
+});
+
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-#region Config-Odata
-
+// Odata
 builder.Services.AddControllers()
     .AddOData(options => options
         .AddRouteComponents("odata", GetEdmModel())
@@ -40,22 +62,13 @@ builder.Services.AddControllers()
     .Expand()
 );
 
-#endregion
-
-#region Config-Dbcontext
-
+// For Entity Framework
 builder.Services.AddDbContext<MyDBcontext>();
 
-#endregion
-
-#region Config-AutoMapper
-
+// Config-AutoMapper
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
-#endregion
-
-#region Config-JQuery(AJAX)
-
+// Config JQuery(Ajax)
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowSpecificOrigin",
@@ -67,8 +80,6 @@ builder.Services.AddCors(options =>
         });
 });
 
-#endregion
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -78,13 +89,16 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 
     #region Config-JQuery(AJAX)
+
     app.UseCors("AllowSpecificOrigin");
+
     #endregion
 }
 
 app.UseHttpsRedirection();
 
-
+// Authentication & Authorization
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

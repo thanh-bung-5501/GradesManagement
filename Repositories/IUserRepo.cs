@@ -5,6 +5,7 @@ namespace Repositories
     public interface IUserRepo
     {
         List<User> GetUsers();
+        User GetUserByEmailAndPw(string email, string pw);
         List<User> GetStudentsActive();
         User GetUserById(string id);
         void Create(User x);

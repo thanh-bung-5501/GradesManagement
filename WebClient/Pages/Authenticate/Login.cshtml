@@ -1,0 +1,28 @@
+﻿@page "/Login"
+@model WebClient.Pages.LoginModel
+@{
+    ViewData["Title"] = "Login Page";
+}
+
+<div>
+    <form id="form" style="width: 300px">
+        <h3>Login</h3>
+        <div>
+            <input class="form-control form-control-sm mb-2" name="email" type="email" placeholder="Email" required />
+        </div>
+        <div>
+            <input class="form-control form-control-sm mb-2" name="password" type="password" placeholder="Password" required />
+        </div>
+        <div>
+            <button class="btn btn-primary" type="submit">Log in</button>
+            <a class="btn btn-outline-primary" href="/Authenticate/Register">Register</a>
+        </div>
+    </form>    
+</div>
+
+@* Loading ajax*@
+<div class="modal-loading"></div>
+
+@section scripts{
+    <script src="~/js/login.js"></script>
+}

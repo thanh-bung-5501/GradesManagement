@@ -59,13 +59,18 @@ namespace WebAPI.Controllers
                 var wsMain = wb.Worksheet("Insert Users");
                 var worksheetRef = wb.Worksheet("Reference");
 
+                // create range to assign validations for the corresponding sheets
+                var roleDataValidation = wsMain.Range("F2:F51").CreateDataValidation();
+                var statusDataValidation = wsMain.Range("G2:G51").CreateDataValidation();
+
                 // set validations to wsMain
-                wsMain.Range("F2:F51").SetDataValidation().List(worksheetRef.Range("A2:A4"), true);
-                wsMain.Range("G2:G51").SetDataValidation().List(worksheetRef.Range("B2:B4"), true);
+                roleDataValidation.List(worksheetRef.Range("A2:A4"), true);
+                statusDataValidation.List(worksheetRef.Range("B2:B4"), true);
+
+                // Set style for wsMain
                 wsMain.Columns().AdjustToContents();
                 wsMain.Column(1).Width = 20;
                 wsMain.Column(2).Width = 20;
-
                 worksheetRef.Protect("123456");
                 worksheetRef.Columns().AdjustToContents();
 

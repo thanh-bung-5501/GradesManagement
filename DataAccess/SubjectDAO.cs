@@ -12,6 +12,8 @@ namespace DataAccess
         }
 
         public static List<Subject> GetSubjects() => _context.Subject.Include(x => x.User).ToList();
+       
+        public static List<Subject> GetSubjectByTeacherId(string id) => _context.Subject.Where(x => x.TeacherId.Equals(id)).ToList();
 
         public static Subject GetSubjectById(int id) => _context.Subject.SingleOrDefault(x => x.Id == id)!;
 

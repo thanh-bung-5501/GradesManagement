@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using BusinessObjects;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OData.Formatter;
 using Microsoft.AspNetCore.OData.Query;
@@ -18,6 +19,7 @@ namespace WebAPI.Controllers
             _Mapper = mapper;
         }
 
+        [Authorize(Roles = "Admin,Teacher")]
         [EnableQuery]
         public ActionResult Get()
         {
@@ -26,6 +28,7 @@ namespace WebAPI.Controllers
             return Ok(subjectDTOs);
         }
 
+        [Authorize(Roles = "Admin,Teacher")]
         [EnableQuery]
         public ActionResult Get([FromODataUri] int key)
         {
@@ -34,6 +37,7 @@ namespace WebAPI.Controllers
             return Ok(subjectDTO);
         }
 
+        [Authorize(Roles = "Admin")]
         public ActionResult Post([FromBody] SubjectCreateDTO subjectCreate)
         {
             if (!ModelState.IsValid)
@@ -45,6 +49,7 @@ namespace WebAPI.Controllers
             return NoContent();
         }
 
+        [Authorize(Roles = "Admin")]
         public ActionResult Put([FromODataUri] int key, [FromBody] SubjectEditDTO subjectEdit)
         {
             if (!ModelState.IsValid)

@@ -51,30 +51,35 @@
 <div class="modal" id="add-modal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title"><i class="bi bi-person-fill-add"></i> Add Grade</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                @*Select search StudentId*@
-                <label class="col-form-label-sm">Student</label>
-                <select id="add-student-id" style="width: 100%"></select>
-                <div id="add-student-details"></div>
-                @*Select search SubjectCode*@
-                <label class="col-form-label-sm">Subject</label>
-                <select id="add-subject-id" style="width: 100%"></select>
-                <div id="add-subject-details"></div>
-                @*Select GradeCategory*@
-                <label class="col-form-label-sm">GradeCategory</label>
-                <select id="add-grade-category-id" style="width: 100%"></select>
-                @*Input Grade*@
-                <label class="col-form-label-sm">Grade</label>
-                <input id="add-grade" class="form-control form-control-sm" type="number" step="any" min="0" max="10" />
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary btn-sm" onclick=""><i class="fa-solid fa-floppy-disk"></i> Save</button>
-            </div>
+            <form id="form-add-grade">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-person-fill-add"></i> Add Grade</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    @*Select search StudentId*@
+                    <label class="col-form-label-sm">Student</label>
+                    <select id="add-student-id" name="studentId" style="width: 100%" required></select>
+
+                    @*Select search SubjectCode*@
+                    <label class="col-form-label-sm">Subject</label>
+                    <select id="add-subject-id" name="subjectId" style="width: 100%" required></select>
+
+                    @*Select GradeCategory*@
+                    <label class="col-form-label-sm">Grade Category</label>
+                    <select id="add-grade-category-id" name="gradeCategoryId" style="width: 100%" required></select>
+
+                    @*Input Grade*@
+                    <label class="col-form-label-sm">Grade</label>
+                    <input id="add-grade" name="grade" class="form-control form-control-sm" required type="number" step="any" min="0" max="10" />
+
+                    <div id="show-error-add" class="text-danger"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary btn-sm"><i class="fa-solid fa-floppy-disk"></i> Save</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -83,30 +88,34 @@
 <div class="modal" id="edit-modal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title"><i class="fa-solid fa-pen-to-square"></i> Edit Grade</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                @*Select search StudentId*@
-                <label class="col-form-label-sm">Student</label>
-                <select id="edit-student-id" style="width: 100%"></select>
-                <div id="edit-student-details"></div>
-                @*Select search SubjectCode*@
-                <label class="col-form-label-sm">Subject</label>
-                <select id="edit-subject-id" style="width: 100%"></select>
-                <div id="edit-subject-details"></div>
-                @*Select GradeCategory*@
-                <label class="col-form-label-sm">GradeCategory</label>
-                <select id="edit-grade-category-id" style="width: 100%"></select>
-                @*Input Grade*@
-                <label class="col-form-label-sm">Grade</label>
-                <input id="edit-grade" class="form-control form-control-sm" type="number" step="any" min="0" max="10" />
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary btn-sm" onclick=""><i class="fa-solid fa-floppy-disk"></i> Save changes</button>
-            </div>
+            <form id="form-edit-grade">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fa-solid fa-pen-to-square"></i> Edit Grade</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <label class="col-form-label-sm">Student Id</label>
+                    <input name="studentId" class="form-control" readonly />
+
+                    <label class="col-form-label-sm">Student Name</label>
+                    <input id="edit-student-name" class="form-control" readonly />
+
+                    <label class="col-form-label-sm">Subject</label>
+                    <input id="edit-subject-id" class="form-control" readonly />
+                    <input name="subjectId" hidden />
+
+                    <label class="col-form-label-sm">Grade Category</label>
+                    <input id="edit-grade-category-id" class="form-control" readonly />
+                    <input name="gradeCategoryId" hidden />
+
+                    <label class="col-form-label-sm">Grade</label>
+                    <input name="grade" class="form-control form-control-sm" type="number" step="any" min="0" max="10" required />
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary btn-sm"><i class="fa-solid fa-floppy-disk"></i> Save changes</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

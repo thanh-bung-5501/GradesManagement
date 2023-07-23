@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OData.Query;
 using Microsoft.AspNetCore.OData.Routing.Controllers;
@@ -16,6 +17,7 @@ namespace WebAPI.Controllers
             _Mapper = mapper;
         }
 
+        [Authorize(Roles = "Admin")]
         [EnableQuery]
         public IActionResult Get()
         {

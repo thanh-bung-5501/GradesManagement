@@ -34,7 +34,110 @@ $(function () {
         var formData = new FormData($('#form-import-grades')[0]);
         ImportGrades(formData);
     });
+
+    $('#form-add-grade').on('submit', function (event) {
+        event.preventDefault();
+        SubmitFormAdd('#form-add-grade');
+    });
+
+    $('#form-edit-grade').on('submit', function (event) {
+        event.preventDefault();
+        SubmitFormEdit('#form-edit-grade');
+    });
 });
+
+function SubmitFormAdd(selectorForm) {
+    $.ajax({
+        url: 'https://localhost:5000/api/Authenticate/user/info',
+        type: 'GET',
+        dataType: 'json',
+        beforeSend: function (xhr) {
+            // Set the Bearer token in the Authorization header
+            xhr.setRequestHeader('Authorization', 'Bearer ' + localStorage.getItem('token'));
+        },
+        success: function (response) {
+
+            var dataGrade = {
+                StudentId: $(selectorForm).find('select[name="studentId"]').val(),
+                SubjectId: parseInt($(selectorForm).find('select[name="subjectId"]').val()),
+                GradeCategoryId: parseInt($(selectorForm).find('select[name="gradeCategoryId"]').val()),
+                Grade: parseFloat($(selectorForm).find('input[name="grade"]').val()),
+                CreatedOn: new Date(),
+                ModifiedOn: new Date(),
+                CreatedBy: response.id,
+                ModifiedBy: response.id,
+            };
+
+            $.ajax({
+                url: "https://localhost:5000/odata/grades",
+                type: "POST",
+                data: JSON.stringify(dataGrade),
+                contentType: "application/json",
+                success: function (response) {
+                    // add new row datatable
+                    RenderGrades();
+
+                    // hide modal add
+                    $("#add-modal").modal("hide");
+                    showToastSuccess(`Add grade successfully!`);
+                },
+                error: function (xhr) {
+                    $('#show-error-add').html(xhr.responseJSON.error.message);
+                }
+            });
+        },
+        error: function (error) {
+            showToastFail(error);
+        }
+    });
+}
+
+function SubmitFormEdit(selectorForm) {
+    $.ajax({
+        url: 'https://localhost:5000/api/Authenticate/user/info',
+        type: 'GET',
+        dataType: 'json',
+        beforeSend: function (xhr) {
+            // Set the Bearer token in the Authorization header
+            xhr.setRequestHeader('Authorization', 'Bearer ' + localStorage.getItem('token'));
+        },
+        success: function (response) {
+
+            var dataGrade = {
+                studentId: $(selectorForm).find('input[name="studentId"]').val(),
+                subjectId: parseInt($(selectorForm).find('input[name="subjectId"]').val()),
+                gradeCategoryId: parseInt($(selectorForm).find('input[name="gradeCategoryId"]').val()),
+                grade: parseFloat($(selectorForm).find('input[name="grade"]').val()),
+                modifiedOn: new Date(),
+                modifiedBy: response.id,
+            };
+
+            $.ajax({
+                url: `https://localhost:5000/api/grades?studentId=${dataGrade.studentId}&subjectId=${dataGrade.subjectId}&gradeCategoryId=${dataGrade.gradeCategoryId}`,
+                type: "PUT",
+                data: JSON.stringify(dataGrade),
+                contentType: "application/json",
+                beforeSend: function (xhr) {
+                    // Set the Bearer token in the Authorization header
+                    xhr.setRequestHeader('Authorization', 'Bearer ' + localStorage.getItem('token'));
+                },
+                success: function (response) {
+                    // edit row datatable
+                    RenderGrades();
+                    // hide modal add
+                    $("#edit-modal").modal("hide");
+                    showToastSuccess(`Edit grade successfully!`);
+                },
+                error: function (error) {
+                    console.error("Request failed. Error:", error);
+                }
+            });
+        },
+        error: function (error) {
+            showToastFail(error);
+        }
+    });
+}
 
 function showToastSuccess(contentBody) {
     const toast = {
@@ -103,6 +206,10 @@ function LoadSelectSearchStudent(selectorSelectSearch, selectorModal, value) {
         type: "GET",
         contentType: "application/json; charset=utf-8",
         dataType: "json",
+        beforeSend: function (xhr) {
+            // Set the Bearer token in the Authorization header
+            xhr.setRequestHeader('Authorization', 'Bearer ' + localStorage.getItem('token'));
+        },
         success: function (result, status, xhr) {
             $(selectorSelectSearch).append(`<optgroup label="[Id] Fullname"></optgroup>`);
 
@@ -181,6 +288,10 @@ function LoadSelectSearchGradeCategory(selectorSelectSearch, selectorModal, valu
         type: "GET",
         contentType: "application/json; charset=utf-8",
         dataType: "json",
+        beforeSend: function (xhr) {
+            // Set the Bearer token in the Authorization header
+            xhr.setRequestHeader('Authorization', 'Bearer ' + localStorage.getItem('token'));
+        },
         success: function (result, status, xhr) {
             $(selectorSelectSearch).append(`<optgroup label="Category"></optgroup>`);
             $.each(result.value, function (index, gradeCategory) {
@@ -209,6 +320,7 @@ function ShowModelAdd() {
     $('#add-subject-id').empty();
     $('#add-grade-category-id').empty();
     $('#add-grade').val(null);
+    $('#show-error-add').html('');
 
     // load select search student
     LoadSelectSearchStudent('#add-student-id', '#add-modal', null);
@@ -226,29 +338,29 @@ function ShowModelAdd() {
 function ShowModalEdit(studentId, subjectId, gradeCatId) {
     // get api grade details
     $.ajax({
-        url: `https://localhost:5000/odata/grades?$expand=user&$filter=subjectid eq ${subjectId} and studentId eq '${studentId}' and GradeCategoryId eq ${gradeCatId}`,
+        url: `https://localhost:5000/odata/grades?$expand=user,subject,gradecategory&$filter=subjectid eq ${subjectId} and studentId eq '${studentId}' and gradeCategoryId eq ${gradeCatId}`,
         type: "GET",
         contentType: "application/json; charset=utf-8",
         dataType: "json",
+        beforeSend: function (xhr) {
+            // Set the Bearer token in the Authorization header
+            xhr.setRequestHeader('Authorization', 'Bearer ' + localStorage.getItem('token'));
+        },
         success: function (grade, status, xhr) {
             // res only 1 record
             var result = grade.value[0];
-            // clear data
-            $('#edit-student-id').empty();
-            $('#edit-subject-id').empty();
-            $('#edit-grade-category-id').empty();
 
-            // load select search student
-            LoadSelectSearchStudent('#edit-student-id', '#edit-modal', result.StudentId);
+            // load data
+            $('#form-edit-grade input[name="studentId"]').val(result.StudentId);
+            $('#edit-student-name').val(result.User.Fullname);
 
-            // load select search subject
-            LoadSelecSearchSubject('#edit-subject-id', '#edit-modal', result.SubjectId);
+            $('#edit-subject-id').val(result.Subject.Code);
+            $('#form-edit-grade input[name="subjectId"]').val(result.SubjectId);
 
-            // load select search grade category
-            LoadSelectSearchGradeCategory('#edit-grade-category-id', '#edit-modal', result.GradeCategoryId);
+            $('#edit-grade-category-id').val(result.GradeCategory.Name);
+            $('#form-edit-grade input[name="gradeCategoryId"]').val(result.GradeCategoryId);
 
-            // load grade
-            $('#edit-grade').val(result.Grade);
+            $('#form-edit-grade input[name="grade"]').val(result.Grade);
 
             $('#edit-modal').modal('show');
         },
@@ -269,11 +381,16 @@ function RenderGrades() {
         },
         success: function (response) {
             if (response.id) {
+
                 table.clear().draw(false);
                 $.ajax({
                     url: `https://localhost:5000/odata/grades?$expand=User,GradeCategory,Subject&$filter=Subject/TeacherId eq '${response.id}'`,
                     type: "GET",
                     dataType: 'json',
+                    beforeSend: function (xhr) {
+                        // Set the Bearer token in the Authorization header
+                        xhr.setRequestHeader('Authorization', 'Bearer ' + localStorage.getItem('token'));
+                    },
                     success: function (listGrades) {
                         var grades = listGrades.value;
                         // Create view data grades
@@ -296,7 +413,6 @@ function RenderGrades() {
                         });
                     }
                 });
-
             } else {
                 console.log("Id is null");
             }
@@ -306,9 +422,6 @@ function RenderGrades() {
             console.log('Error:', xhr);
         }
     });
-
-
-
 }
 
 function DownloadTemplate() {
@@ -317,6 +430,10 @@ function DownloadTemplate() {
         method: 'GET',
         xhrFields: {
             responseType: 'blob',
+        },
+        beforeSend: function (xhr) {
+            // Set the Bearer token in the Authorization header
+            xhr.setRequestHeader('Authorization', 'Bearer ' + localStorage.getItem('token'));
         },
         success: function (response) {
             var blob = new Blob([response], {
@@ -348,6 +465,10 @@ function ExportGrades() {
         method: 'GET',
         xhrFields: {
             responseType: 'blob',
+        },
+        beforeSend: function (xhr) {
+            // Set the Bearer token in the Authorization header
+            xhr.setRequestHeader('Authorization', 'Bearer ' + localStorage.getItem('token'));
         },
         success: function (response) {
             var blob = new Blob([response], {
@@ -381,6 +502,10 @@ function ImportGrades(formData) {
         enctype: 'multipart/form-data',
         processData: false,
         contentType: false,
+        beforeSend: function (xhr) {
+            // Set the Bearer token in the Authorization header
+            xhr.setRequestHeader('Authorization', 'Bearer ' + localStorage.getItem('token'));
+        },
         success: function (response) {
             RenderGrades();
             // Handle the successful response

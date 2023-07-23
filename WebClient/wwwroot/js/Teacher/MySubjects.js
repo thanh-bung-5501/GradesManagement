@@ -29,6 +29,10 @@ function RenderSubjects() {
                     url: `https://localhost:5000/odata/subject?$expand=user&$filter=TeacherId eq '${response.id}'`,
                     type: "GET",
                     dataType: 'json',
+                    beforeSend: function (xhr) {
+                        // Set the Bearer token in the Authorization header
+                        xhr.setRequestHeader('Authorization', 'Bearer ' + localStorage.getItem('token'));
+                    },
                     success: function (listSubjects) {
                         var subjects = listSubjects.value;
                         // Create view data subjects

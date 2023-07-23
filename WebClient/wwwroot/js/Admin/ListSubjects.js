@@ -94,6 +94,10 @@ function RenderSubjects() {
         url: `https://localhost:5000/odata/subject?$expand=user`,
         type: "GET",
         dataType: 'json',
+        beforeSend: function (xhr) {
+            // Set the Bearer token in the Authorization header
+            xhr.setRequestHeader('Authorization', 'Bearer ' + localStorage.getItem('token'));
+        },
         success: function (listSubjects) {
             var subjects = listSubjects.value;
             // Create view data subjects
@@ -115,10 +119,14 @@ function RenderSubjects() {
 
 function ShowModelAdd() {
     $.ajax({
-        url: `https://localhost:5000/odata/User?$expand=role&$filter=Role/Name eq 'teacher'`,
+        url: `https://localhost:5000/odata/User?$expand=role&$filter=Role/Id eq 2`,
         type: "GET",
         contentType: "application/json; charset=utf-8",
         dataType: "json",
+        beforeSend: function (xhr) {
+            // Set the Bearer token in the Authorization header
+            xhr.setRequestHeader('Authorization', 'Bearer ' + localStorage.getItem('token'));
+        },
         success: function (result, status, xhr) {
             // clear items
             $('#add-code').val(null);
@@ -158,6 +166,10 @@ function ShowModalEdit(id) {
         type: "GET",
         contentType: "application/json; charset=utf-8",
         dataType: "json",
+        beforeSend: function (xhr) {
+            // Set the Bearer token in the Authorization header
+            xhr.setRequestHeader('Authorization', 'Bearer ' + localStorage.getItem('token'));
+        },
         success: function (result, status, xhr) {
 
             //Load select listTeachers
@@ -243,6 +255,10 @@ function ModalAddSumibtForm() {
             type: "POST",
             data: JSON.stringify(data_subject),
             contentType: "application/json",
+            beforeSend: function (xhr) {
+                // Set the Bearer token in the Authorization header
+                xhr.setRequestHeader('Authorization', 'Bearer ' + localStorage.getItem('token'));
+            },
             success: function (response) {
                 // add new row datatable
                 RenderSubjects();
@@ -271,6 +287,10 @@ function ModalEditSubmitForm() {
         type: "PUT",
         data: JSON.stringify(data_subject),
         contentType: "application/json",
+        beforeSend: function (xhr) {
+            // Set the Bearer token in the Authorization header
+            xhr.setRequestHeader('Authorization', 'Bearer ' + localStorage.getItem('token'));
+        },
         success: function (response) {
             // edit row datatable
             RenderSubjects();

@@ -8,5 +8,7 @@ namespace Repositories
         Grades GetGradeByKeys(string stuId, int subId, int gradeCatId);
         void Create(Grades grade);
         void BulkCreate(List<Grades> grades);
+        void Update(Grades grade);
+        void Delete(string StudentId, int SubjectId, int GradeCatId);
     }
 }

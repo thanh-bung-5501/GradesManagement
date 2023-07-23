@@ -22,7 +22,7 @@
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container">
-                <h1 class="navbar-brand">WebClient</h1>
+                <h1 class="navbar-brand">Grades Management Tool</h1>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
@@ -71,36 +71,36 @@
                         console.log(response.role);
                         var adminMenu = `<div class="navbar-nav flex-grow-1">
                             <div class="nav-item">
-                                <a class="nav-link text-dark" href="/Homepage" >Home</a>
+                                <a class="nav-link text-dark btn-hover" href="/Index" >Home</a>
                             </div>
                             <div class="dropdown">
-                                <div class="nav-item nav-link text-dark" id="dropdownMenuButton"
-                                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <div class="nav-item nav-link text-dark btn-hover" id="dropdownMenuButton"
+                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     Admin
                                 </div>
 
                                 <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                    <a class="dropdown-item" href="/Admin/ListUsers">List Users</a>
-                                    <a class="dropdown-item" href="/Admin/ListSubjects">List Subjects</a>
-                                    <a class="dropdown-item" href="/Admin/ListGrades">List Grades</a>
+                                    <a class="dropdown-item btn-hover" href="/Admin/ListUsers">List Users</a>
+                                    <a class="dropdown-item btn-hover" href="/Admin/ListSubjects">List Subjects</a>
+                                    <a class="dropdown-item btn-hover" href="/Admin/ListGrades">List Grades</a>
                                 </div>
                             </div>
                         </div>`;
 
                         var teacherMenu = `<div class="navbar-nav flex-grow-1">
                             <div class="nav-item">
-                                <a class="nav-link text-dark" href="/Homepage" >Home</a>
+                                <a class="nav-link btn-hover text-dark" href="/Index" >Home</a>
                             </div>
                             <div class="dropdown">
-                                <div class="nav-item nav-link text-dark" id="dropdownMenuButton"
+                                <div class="nav-item nav-link text-dark btn-hover" id="dropdownMenuButton"
                                         data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     Teacher
                                 </div>
 
                                 <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                    <a class="dropdown-item" href="/Teacher/ListStudents">List Students</a>
-                                    <a class="dropdown-item" href="/Teacher/MySubjects">My Subjects</a>
-                                    <a class="dropdown-item" href="/Teacher/StudentGrades">Student Grades</a>
+                                    <a class="dropdown-item btn-hover" href="/Teacher/ListStudents">List Students</a>
+                                    <a class="dropdown-item btn-hover" href="/Teacher/MySubjects">My Subjects</a>
+                                    <a class="dropdown-item btn-hover" href="/Teacher/StudentGrades">Student Grades</a>
                                 </div>
                             </div>
                         </div>`;
@@ -112,18 +112,24 @@
                         }
 
                         $('#login-logout-btn').html(`Hello, ${response.name}!&nbsp;&nbsp;
-                            <a class="nav-link text-dark btn" onClick="Logout();">Logout</a>`);
+                            <a class="nav-link text-dark btn btn-hover" onClick="Logout();">Logout</a>`);
                     },
                     error: function (xhr, status, error) {
                         // Handle errors, if any
                         console.log('Error:', xhr);
                     }
                 });
+            } else {
+                $('#login-logout-btn').html(`<a class="nav-link text-dark btn btn-hover" onClick="Login();">Login</a>`);
             }
         });
 
         function Logout() {
             localStorage.removeItem('token');
+            window.location.href = '/Index';
+        }
+
+        function Login() {
             window.location.href = '/Login';
         }
     </script>

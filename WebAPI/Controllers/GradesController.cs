@@ -1,12 +1,13 @@
 ﻿using AutoMapper;
 using BusinessObjects;
 using ClosedXML.Excel;
-using DocumentFormat.OpenXml.Office2010.Excel;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OData.Query;
 using Microsoft.AspNetCore.OData.Routing.Controllers;
 using Repositories;
 using System.Data;
+using System.Security.Claims;
 using WebAPI.Models;
 
 namespace WebAPI.Controllers
@@ -23,6 +24,7 @@ namespace WebAPI.Controllers
             _Mapper = mapper;
         }
 
+        [Authorize(Roles = "Admin,Teacher")]
         [EnableQuery]
         public ActionResult Get()
         {
@@ -31,9 +33,8 @@ namespace WebAPI.Controllers
             return Ok(gradeDTOs);
         }
 
-
-        [HttpGet]
-        [Route("api/grades/export-grades")]
+        [Authorize(Roles = "Admin,Teacher")]
+        [HttpGet("api/grades/export-grades")]
         public ActionResult ExportGrades()
         {
             var _gData = GetGradesData();
@@ -78,8 +79,8 @@ namespace WebAPI.Controllers
             return dt;
         }
 
-        [HttpPost]
-        [Route("api/grades/import-grades")]
+        [Authorize(Roles = "Admin,Teacher")]
+        [HttpPost("api/grades/import-grades")]
         public ActionResult UploadFile(IFormFile file)
         {
             if (file != null && file.Length > 0)
@@ -96,6 +97,7 @@ namespace WebAPI.Controllers
                     IXLWorksheet wsRefStudents = workbook.Worksheet(2);
                     IXLWorksheet wsRefSubjects = workbook.Worksheet(3);
                     IXLWorksheet wsRefGradeCategories = workbook.Worksheet(4);
+
                     // Validate the sheet names
                     if (wsMain.Name != "Insert Grades" || wsRefStudents.Name != "Reference Students"
                         || wsRefSubjects.Name != "Reference Subjects" || wsRefGradeCategories.Name != "Reference Grade Categories")
@@ -112,14 +114,25 @@ namespace WebAPI.Controllers
                     // Add columns to the dTableMain based on the Excel file headers
                     foreach (IXLCell cell in rangeWsMain.FirstRow().CellsUsed()) dTableMain.Columns.Add(cell.Value.ToString()); ;
 
-                    // Validate match sheets reference
-                    var totalStudents = _repoU.GetStudentsActive();
-                    var totalSubjects = _repoS.GetSubjects();
-                    var totalGradeCats = _repoGC.GetGradeCategories();
+                    var user = HttpContext.User;
+                    var roleClaim = user.FindFirst(c => c.Type.Equals(ClaimTypes.Role))!;
+                    var uIdClaim = user.FindFirst(c => c.Type.Equals("UserId"))!;
 
-                    if (totalStudents.Count != rangeWsStudents.RowsUsed().Skip(1).Count()
-                        || totalSubjects.Count != rangeWsSubjects.RowsUsed().Skip(1).Count()
-                        || totalGradeCats.Count != rangeWsGradeCats.RowsUsed().Skip(1).Count())
+                    // get total record for validate sheets reference
+                    var totalStudents = _repoU.GetStudentsActive().Count;
+                    var totalSubjects = _repoS.GetSubjects().Count; // for admin
+                    var totalGradeCats = _repoGC.GetGradeCategories().Count;
+
+                    // list the subjects this teacher teaches
+                    if (roleClaim.Value.Equals("Teacher"))
+                    {
+                        totalSubjects = _repoS.GetSubjectsByTeacherId(uIdClaim.Value).Count; // for teacher
+                    }
+
+                    // Validate match sheets reference
+                    if (totalStudents != rangeWsStudents.RowsUsed().Skip(1).Count()
+                        || totalSubjects != rangeWsSubjects.RowsUsed().Skip(1).Count()
+                        || totalGradeCats != rangeWsGradeCats.RowsUsed().Skip(1).Count())
                         return BadRequest($"(File input) [Sheets Reference] is the old template. Please download the new template!");
 
                     // Validate the column count and names
@@ -216,8 +229,9 @@ namespace WebAPI.Controllers
                             {
                                 item.CreatedOn = DateTime.Now;
                                 item.ModifiedOn = DateTime.Now;
-                                item.CreatedBy = "Admin";
-                                item.ModifiedBy = "Admin";
+                                // get uId by token
+                                item.CreatedBy = uIdClaim.Value;
+                                item.ModifiedBy = uIdClaim.Value;
                             }
                             List<Grades> grades = _Mapper.Map<List<Grades>>(gradeDTOs);
                             _repoG.BulkCreate(grades);
@@ -233,14 +247,26 @@ namespace WebAPI.Controllers
             return BadRequest("No file was uploaded.");
         }
 
-        [HttpGet]
-        [Route("api/grades/grades-insert-template")]
+        [Authorize(Roles = "Admin,Teacher")]
+        [HttpGet("api/grades/grades-insert-template")]
         public ActionResult DownloadTemplate()
         {
+            var user = HttpContext.User;
+            // get urole by token
+            var roleClaim = user.FindFirst(c => c.Type.Equals(ClaimTypes.Role))!;
+            // get uid by token
+            var uIdClaim = user.FindFirst(c => c.Type.Equals("UserId"))!;
+
             // load datatable References
-            var _refStudents = ReferenceStudents(_repoU.GetStudentsActive());
+            var _refStudents = ReferenceStudentsForAdmin(_repoU.GetStudentsActive());
             var _refSubjects = ReferenceSubjects(_repoS.GetSubjects());
             var _refGradeCategories = ReferenceGradeCategories(_repoGC.GetGradeCategories());
+
+            // list the subjects this teacher teaches
+            if (roleClaim.Value.Equals("Teacher"))
+            {
+                _refSubjects = ReferenceSubjectsForTeacher(_repoS.GetSubjectsByTeacherId(uIdClaim.Value));
+            }
 
             // count row references
             int rowRefStudents = _refStudents.Rows.Count;
@@ -262,13 +288,22 @@ namespace WebAPI.Controllers
                 var wsSubjects = wb.Worksheet("Reference Subjects");
                 var wsGradeCategories = wb.Worksheet("Reference Grade Categories");
 
+                // create range to assign validations for the corresponding sheets
+                var wsStuDataValidation = wsMain.Range("A2:A51").CreateDataValidation();
+                var wsSubDataValidation = wsMain.Range("C2:C51").CreateDataValidation();
+                var wsGradeCatDataValidation = wsMain.Range("E2:E51").CreateDataValidation();
+                var colGradeDataValidation = wsMain.Range("G2:G51").CreateDataValidation();
+
                 // set validations to wsMain
-                wsMain.Range("A2:A51").SetDataValidation().List(wsStudents.Range("A2:A" + (rowRefStudents + 1)), true);
-                wsMain.Range("C2:C51").SetDataValidation().List(wsSubjects.Range("A2:A" + (rowRefSubjects + 1)), true);
-                wsMain.Range("E2:E51").SetDataValidation().List(wsSubjects.Range("A2:A" + (rowRefGradeCategories + 1)), true);
-                wsMain.Range("G2:G51").SetDataValidation().Decimal.Between(0, 10);
-                wsMain.Range("G2:G51").SetDataValidation().ErrorTitle = "Validation Error";
-                wsMain.Range("G2:G51").SetDataValidation().ErrorMessage = "Please enter a number between 0 and 10.";
+                wsStuDataValidation.List(wsStudents.Range("A2:A" + (rowRefStudents + 1)), true);
+                wsSubDataValidation.List(wsSubjects.Range("A2:A" + (rowRefSubjects + 1)), true);
+                wsGradeCatDataValidation.List(wsGradeCategories.Range("A2:A" + (rowRefGradeCategories + 1)), true);
+
+                // unique case set validation
+                colGradeDataValidation.Decimal.Between(0, 10);
+                colGradeDataValidation.ErrorTitle = "Validation Error";
+                colGradeDataValidation.ErrorMessage = "Please enter a number or a decimal number between 0 and 10.";
+
                 // assign vlookup rangeWsMain
                 var lookupRangeStudents = wsStudents.Range("A2:B" + (rowRefStudents + 1));
                 var lookupRangeSubjects = wsSubjects.Range("A2:B" + (rowRefSubjects + 1));
@@ -293,7 +328,7 @@ namespace WebAPI.Controllers
                     gradeCatNameCol.FormulaA1 = vlookupFormulaGradeCats;
                 }
 
-                // Set style fow wsMain
+                // Set style for wsMain
                 wsMain.Protect("123456");
                 wsMain.Column(1).Style.Protection.SetLocked(false);
                 wsMain.Column(3).Style.Protection.SetLocked(false);
@@ -317,6 +352,7 @@ namespace WebAPI.Controllers
                 };
             }
         }
+
         [NonAction]
         private DataTable TableTemplate()
         {
@@ -361,7 +397,7 @@ namespace WebAPI.Controllers
         }
 
         [NonAction]
-        private DataTable ReferenceStudents(List<User> students)
+        private DataTable ReferenceStudentsForAdmin(List<User> students)
         {
             DataTable validationTable = new DataTable();
             validationTable.TableName = "Reference Students";
@@ -398,6 +434,77 @@ namespace WebAPI.Controllers
                 validationTable.Rows.Add(dr);
             }
             return validationTable;
+        }
+
+        [NonAction]
+        private DataTable ReferenceSubjectsForTeacher(List<Subject> subjects)
+        {
+            DataTable validationTable = new DataTable();
+            validationTable.TableName = "Reference Subjects";
+            validationTable.Columns.Add("Id");
+            validationTable.Columns.Add("Code");
+
+            DataRow dr;
+            // insert data to table validation
+            for (int i = 0; i < subjects.Count; i++)
+            {
+                dr = validationTable.NewRow();
+                dr["Id"] = subjects[i].Id;
+                dr["Code"] = subjects[i].Code;
+                validationTable.Rows.Add(dr);
+            }
+            return validationTable;
+        }
+
+        [Authorize(Roles = "Admin,Teacher")]
+        public ActionResult Post([FromBody] GradesCreateDTO gradesCreate)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var found = _repoG.GetGradeByKeys(gradesCreate.StudentId, gradesCreate.SubjectId, gradesCreate.GradeCategoryId);
+
+            if(found != null)
+            {
+                return BadRequest($"Student({found.StudentId}) has been graded ({found.Grade}) in {found.GradeCategory.Name} [{found.Subject.Code}].");
+            }
+
+            Grades newGrade = _Mapper.Map<Grades>(gradesCreate);
+            _repoG.Create(newGrade);
+            return NoContent();
+        }
+
+        [Authorize(Roles = "Admin,Teacher")]
+        [HttpPut("api/grades")]
+        public ActionResult Put(string StudentId, int SubjectId, int GradeCategoryId, [FromBody] GradesUpdateDTO gradesUpdate)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            if (StudentId != gradesUpdate.StudentId || SubjectId != gradesUpdate.SubjectId 
+                || GradeCategoryId != gradesUpdate.GradeCategoryId)
+            {
+                return BadRequest(new { status = "error" ,message = "Data do not match with keys." });
+            }
+            Grades newGrade = _Mapper.Map<Grades>(gradesUpdate);
+            _repoG.Update(newGrade);
+            return NoContent();
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpDelete("api/grades")]
+        public ActionResult Put(string StudentId, int SubjectId, int GradeCategoryId)
+        {
+            var found = _repoG.GetGradeByKeys(StudentId, SubjectId, GradeCategoryId);
+            if (found == null)
+            {
+                return BadRequest();
+            }
+            _repoG.Delete(StudentId, SubjectId, GradeCategoryId);
+            return NoContent();
         }
     }
 }

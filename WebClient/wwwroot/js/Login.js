@@ -4,8 +4,6 @@
 });
 
 $(function () {
-    localStorage.removeItem('token');
-
     $('#form').on('submit', function () {
         event.preventDefault();
 
@@ -13,7 +11,8 @@ $(function () {
         var email = $('input[name="email"]').val();
         var password = $('input[name="password"]').val();
 
-         //Sending the AJAX request
+        localStorage.clear();
+        //Sending the AJAX request
         $.ajax({
             url: 'https://localhost:5000/api/Authenticate/login',
             type: 'POST',
@@ -26,7 +25,7 @@ $(function () {
                 // Store the JWT token securely (e.g., in local storage)
                 localStorage.setItem('token', jwtToken);
 
-                window.location.href = "/Homepage";
+                window.location.href = "/Index";
             },
             error: function (xhr, status, error) {
                 // Handle errors, if any

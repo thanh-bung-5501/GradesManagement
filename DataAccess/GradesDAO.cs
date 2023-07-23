@@ -32,10 +32,36 @@ namespace DataAccess
             _context.SaveChanges();
         }
 
+        public static void Update(Grades newGrade)
+        {
+            var oldGrade = _context.Grades.SingleOrDefault(g => g.StudentId == newGrade.StudentId
+                && g.SubjectId == newGrade.SubjectId && g.GradeCategoryId == newGrade.GradeCategoryId);
+
+            if (oldGrade != null)
+            {
+                oldGrade.Grade = newGrade.Grade;
+                oldGrade.ModifiedOn = newGrade.ModifiedOn;
+                oldGrade.ModifiedBy = newGrade.ModifiedBy;
+                _context.SaveChanges();
+            }
+        }
+
         public static void BulkCreate(List<Grades> grades)
         {
             _context.Grades.AddRange(grades);
             _context.SaveChanges();
+        }
+
+        public static void Delete(string StudentId, int SubjectId, int GradeCatId)
+        {
+            var found = _context.Grades.SingleOrDefault(g => g.StudentId == StudentId
+                && g.SubjectId == SubjectId && g.GradeCategoryId == GradeCatId);
+
+            if(found!= null)
+            {
+                _context.Grades.Remove(found);
+                _context.SaveChanges();
+            }
         }
     }
 }

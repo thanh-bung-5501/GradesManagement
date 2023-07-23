@@ -1,18 +1,48 @@
-﻿@page "/Homepage"
+﻿@page
 @model IndexModel
 @{
     ViewData["Title"] = "Home page";
 }
 
 <div class="text-center">
-    <h1 class="display-4">Welcome back</h1>
 </div>
 
 @section scripts{
     <script type="text/javascript">
         $(function () {
-            if (!localStorage.getItem('token')) {
-                window.location.href = '/Login';
+            if (localStorage.getItem('token')) {
+
+                function isTokenExpired(token) {
+                    const tokenParts = token.split('.');
+                    if (tokenParts.length !== 3) {
+                        // Invalid token format
+                        return true;
+                    }
+
+                    const payload = JSON.parse(atob(tokenParts[1]));
+                    if (!payload.exp) {
+                        // Token does not contain an expiration time
+                        return true;
+                    }
+                    // Convert expiration time to milliseconds
+                    const expirationDate = new Date(payload.exp * 1000); 
+                    const currentDateTime = new Date();
+
+                    return expirationDate < currentDateTime;
+                }
+
+                const jwtToken = localStorage.getItem('token');
+
+                if (isTokenExpired(jwtToken)) {
+                    console.log("JWT Token has expired.");
+                    window.location.href = '/Login';
+                } else {
+                    console.log("JWT Token is still valid.");
+                    $('.text-center').html(`<h1 class="display-4">Welcome back!</h1>`);
+
+                }
+            } else {
+                $('.text-center').html(`<h1 class="display-4">Welcome to Grades Management Tools</h1>`);
             }
         });
     </script>

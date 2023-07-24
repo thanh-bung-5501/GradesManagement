@@ -1,0 +1,28 @@
+﻿@page
+@model WebClient.Pages.Student.MyGradesModel
+
+@{
+    ViewData["Title"] = "My Grades";
+}
+
+<h3>My Grades</h3>
+
+@*Table*@
+<table class="display compact nowrap" style="width:100%">
+    <thead>
+        <tr>
+            <th scope="col">StudentId</th>
+            <th scope="col">StudentName</th>
+            <th scope="col">SubjectCode</th>
+            <th scope="col">GradeCategory</th>
+            <th scope="col">Grade</th>
+        </tr>
+    </thead>
+</table>
+
+@* Loading ajax*@
+<div class="modal-loading"></div>
+
+@section scripts{
+    <script src="~/js/student/mygrades.js"></script>
+}

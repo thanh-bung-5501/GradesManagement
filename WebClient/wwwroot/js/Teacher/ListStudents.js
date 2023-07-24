@@ -1,4 +1,5 @@
-﻿var table = $('table').DataTable({
+﻿var token = localStorage.getItem('token');
+var table = $('table').DataTable({
     autoWidth: true,
 });
 
@@ -8,9 +9,28 @@ $(document).on({
 });
 
 $(function () {
-    // render students view
-    RenderStudents();
+    Authorize();
 });
+
+function Authorize() {
+    $.ajax({
+        url: 'https://localhost:5000/api/Authenticate/user/info',
+        type: 'GET',
+        dataType: 'json',
+        beforeSend: function (xhr) {
+            // Set the Bearer token in the Authorization header
+            xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+        },
+        success: function (response) {
+            if (response.role === 'Teacher') {
+                // render students view
+                RenderStudents();
+            } else {
+                window.location.href = "/NotFound";
+            }
+        }
+    });
+}
 
 function RenderStudents() {
     table.clear().draw(false);
@@ -20,7 +40,7 @@ function RenderStudents() {
         dataType: 'json',
         beforeSend: function (xhr) {
             // Set the Bearer token in the Authorization header
-            xhr.setRequestHeader('Authorization', 'Bearer ' + localStorage.getItem('token'));
+            xhr.setRequestHeader('Authorization', 'Bearer ' + token);
         },
         success: function (listUsers) {
             var users = listUsers.value;

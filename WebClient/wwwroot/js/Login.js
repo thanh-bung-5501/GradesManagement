@@ -5,6 +5,7 @@
 
 $(function () {
     $('#form').on('submit', function () {
+        $('#show-error').html('');
         event.preventDefault();
 
         // Get user credentials from the form
@@ -28,8 +29,12 @@ $(function () {
                 window.location.href = "/Index";
             },
             error: function (xhr, status, error) {
-                // Handle errors, if any
-                console.log('Error:', xhr);
+                if (xhr.status === 401) {
+                    $('#show-error').html(`Field Email or Password does not correct!`);
+                } else {
+                    // Handle errors, if any
+                    console.log('Error:', xhr);
+                }
             }
         });
     });

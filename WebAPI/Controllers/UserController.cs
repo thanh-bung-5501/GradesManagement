@@ -21,6 +21,7 @@ namespace WebAPI.Controllers
             _Mapper = mapper;
         }
 
+        [Authorize(Roles = "Admin,Teacher")]
         [EnableQuery]
         public ActionResult Get()
         {

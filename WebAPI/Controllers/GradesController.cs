@@ -24,7 +24,7 @@ namespace WebAPI.Controllers
             _Mapper = mapper;
         }
 
-        [Authorize(Roles = "Admin,Teacher")]
+        [Authorize(Roles = "Admin,Teacher,Student")]
         [EnableQuery]
         public ActionResult Get()
         {
@@ -37,7 +37,18 @@ namespace WebAPI.Controllers
         [HttpGet("api/grades/export-grades")]
         public ActionResult ExportGrades()
         {
-            var _gData = GetGradesData();
+            var user = HttpContext.User;
+            // get urole by token
+            var roleClaim = user.FindFirst(c => c.Type.Equals(ClaimTypes.Role))!;
+            var uIdClaim = user.FindFirst(c => c.Type.Equals("UserId"))!;
+
+            var _gData = GetGradesDataForAdmin();
+
+            if (roleClaim.Value.Equals("Teacher"))
+            {
+                _gData = GetGradesDataForTeacher(uIdClaim.Value);
+            }
+
             using (XLWorkbook wb = new XLWorkbook())
             {
                 wb.AddWorksheet(_gData, "Grades Recods");
@@ -53,7 +64,7 @@ namespace WebAPI.Controllers
         }
 
         [NonAction]
-        private DataTable GetGradesData()
+        private DataTable GetGradesDataForAdmin()
         {
             DataTable dt = new DataTable();
             dt.TableName = "Grades data";
@@ -74,6 +85,29 @@ namespace WebAPI.Controllers
                 {
                     dt.Rows.Add(item.StudentId, item.User.Fullname, item.Subject.Code, item.GradeCategory.Name,
                         item.Grade, item.CreatedOn, item.ModifiedOn, item.CreatedBy, item.ModifiedBy);
+                });
+            }
+            return dt;
+        }
+
+        [NonAction]
+        private DataTable GetGradesDataForTeacher(string teacherId)
+        {
+            DataTable dt = new DataTable();
+            dt.TableName = "Grades data";
+            dt.Columns.Add("StudentId", typeof(string));
+            dt.Columns.Add("StudentName", typeof(string));
+            dt.Columns.Add("SubjectCode", typeof(string));
+            dt.Columns.Add("GradeCategory", typeof(string));
+            dt.Columns.Add("Grade", typeof(string));
+
+            var _list = _repoG.GetGradesByTeacherId(teacherId);
+
+            if (_list.Count > 0)
+            {
+                _list.ForEach(item =>
+                {
+                    dt.Rows.Add(item.StudentId, item.User.Fullname, item.Subject.Code, item.GradeCategory.Name, item.Grade);
                 });
             }
             return dt;

@@ -10,8 +10,7 @@ $(document).on({
 });
 
 $(function () {
-    // render users view
-    RenderUsers();
+    Authorize();
 
     // catch events input password
     EyePasswordEvent();
@@ -58,6 +57,26 @@ $(function () {
         ImportUsers(formData);
     });
 });
+
+function Authorize() {
+    $.ajax({
+        url: 'https://localhost:5000/api/Authenticate/user/info',
+        type: 'GET',
+        dataType: 'json',
+        beforeSend: function (xhr) {
+            // Set the Bearer token in the Authorization header
+            xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+        },
+        success: function (response) {
+            if (response.role === 'Admin') {
+                // render users view
+                RenderUsers();
+            } else {
+                window.location.href = "/NotFound";
+            }
+        }
+    });
+}
 
 function showToastSuccess(contentBody) {
     const toast = {
@@ -118,7 +137,7 @@ function ImportUsers(formData) {
         contentType: false,
         beforeSend: function (xhr) {
             // Set the Bearer token in the Authorization header
-            xhr.setRequestHeader('Authorization', 'Bearer ' + localStorage.getItem('token'));
+            xhr.setRequestHeader('Authorization', 'Bearer ' + token);
         },
         success: function (response) {
             RenderUsers();
@@ -150,7 +169,7 @@ function ExportUsers() {
         },
         beforeSend: function (xhr) {
             // Set the Bearer token in the Authorization header
-            xhr.setRequestHeader('Authorization', 'Bearer ' + localStorage.getItem('token'));
+            xhr.setRequestHeader('Authorization', 'Bearer ' + token);
         },
         success: function (response) {
             var blob = new Blob([response], {
@@ -184,7 +203,7 @@ function DownloadTemplate() {
         },
         beforeSend: function (xhr) {
             // Set the Bearer token in the Authorization header
-            xhr.setRequestHeader('Authorization', 'Bearer ' + localStorage.getItem('token'));
+            xhr.setRequestHeader('Authorization', 'Bearer ' + token);
         },
         success: function (response) {
             var blob = new Blob([response], {
@@ -240,7 +259,7 @@ function RenderUsers() {
         dataType: 'json',
         beforeSend: function (xhr) {
             // Set the Bearer token in the Authorization header
-            xhr.setRequestHeader('Authorization', 'Bearer ' + localStorage.getItem('token'));
+            xhr.setRequestHeader('Authorization', 'Bearer ' + token);
         },
         success: function (listUsers) {
             var users = listUsers.value;
@@ -268,11 +287,7 @@ function RenderUsers() {
             });
         },
         error: function (xhr) {
-            if (xhr.status === 401 || xhr.status === 403) {
-                window.location.href = "/NotFound";
-            } else {
-                showToastFail(xhr.responseText);
-            }
+            showToastFail(xhr.responseText);
         }
     });
 }
@@ -285,7 +300,7 @@ function ShowModalEdit(id) {
         dataType: "json",
         beforeSend: function (xhr) {
             // Set the Bearer token in the Authorization header
-            xhr.setRequestHeader('Authorization', 'Bearer ' + localStorage.getItem('token'));
+            xhr.setRequestHeader('Authorization', 'Bearer ' + token);
         },
         success: function (result, status, xhr) {
             // set data to view
@@ -370,7 +385,7 @@ function ModalAddSubmitForm() {
             contentType: "application/json",
             beforeSend: function (xhr) {
                 // Set the Bearer token in the Authorization header
-                xhr.setRequestHeader('Authorization', 'Bearer ' + localStorage.getItem('token'));
+                xhr.setRequestHeader('Authorization', 'Bearer ' + token);
             },
             success: function (response) {
                 // add new row datatable
@@ -405,7 +420,7 @@ function ModalEditSubmitForm() {
         contentType: "application/json",
         beforeSend: function (xhr) {
             // Set the Bearer token in the Authorization header
-            xhr.setRequestHeader('Authorization', 'Bearer ' + localStorage.getItem('token'));
+            xhr.setRequestHeader('Authorization', 'Bearer ' + token);
         },
         success: function (response) {
             // edit row datatable

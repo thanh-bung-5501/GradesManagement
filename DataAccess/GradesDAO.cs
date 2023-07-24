@@ -18,6 +18,15 @@ namespace DataAccess
                 .ToList();
             return rs;
         }
+        public static List<Grades> GetGradesByTeacherId(string id)
+        {
+            var rs = _context.Grades.Include(x => x.GradeCategory)
+                .Include(x => x.User)
+                .Include(x => x.Subject)
+                .Where(x => x.Subject.TeacherId.Equals(id))
+                .ToList();
+            return rs;
+        }
         public static Grades GetGradeByKeys(string stuId, int subId, int gradeCatId)
         {
             var rs = _context.Grades.Include(x => x.GradeCategory)

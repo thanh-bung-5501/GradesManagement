@@ -5,6 +5,7 @@ namespace Repositories
     public interface IGradeRepo
     {
         List<Grades> GetGrades();
+        List<Grades> GetGradesByTeacherId(string id);
         Grades GetGradeByKeys(string stuId, int subId, int gradeCatId);
         void Create(Grades grade);
         void BulkCreate(List<Grades> grades);

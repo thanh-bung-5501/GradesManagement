@@ -105,10 +105,28 @@
                             </div>
                         </div>`;
 
+                        var studentMenu = `<div class="navbar-nav flex-grow-1">
+                            <div class="nav-item">
+                                <a class="nav-link btn-hover text-dark" href="/Index" >Home</a>
+                            </div>
+                            <div class="dropdown">
+                                <div class="nav-item nav-link text-dark btn-hover" id="dropdownMenuButton"
+                                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    Student
+                                </div>
+
+                                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                    <a class="dropdown-item btn-hover" href="/Student/MyGrades">My Grades</a>
+                                </div>
+                            </div>
+                        </div>`;
+
                         if (response.role === 'Admin') {
                             navbar.html(adminMenu);
                         } else if (response.role === 'Teacher') {
                             navbar.html(teacherMenu);
+                        } else if (response.role === 'Student'){
+                            navbar.html(studentMenu);
                         }
 
                         $('#login-logout-btn').html(`Hello, ${response.name}!&nbsp;&nbsp;

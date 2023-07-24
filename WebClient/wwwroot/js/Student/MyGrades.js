@@ -1,5 +1,4 @@
-﻿var token = localStorage.getItem('token');
-var table = $('table').DataTable({
+﻿var table = $('table').DataTable({
     autoWidth: true,
 });
 
@@ -19,12 +18,12 @@ function Authorize() {
         dataType: 'json',
         beforeSend: function (xhr) {
             // Set the Bearer token in the Authorization header
-            xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+            xhr.setRequestHeader('Authorization', 'Bearer ' + localStorage.getItem('token'));
         },
         success: function (response) {
-            if (response.role === 'Teacher') {
-                // render subjects view
-                RenderSubjects();
+            if (response.role === 'Student') {
+                // render grades view
+                RenderGrades();
             } else {
                 window.location.href = "/NotFound";
             }
@@ -32,37 +31,37 @@ function Authorize() {
     });
 }
 
-function RenderSubjects() {
-    // get userId by token
+function RenderGrades() {
     $.ajax({
         url: 'https://localhost:5000/api/Authenticate/user/info',
         type: 'GET',
         dataType: 'json',
         beforeSend: function (xhr) {
             // Set the Bearer token in the Authorization header
-            xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+            xhr.setRequestHeader('Authorization', 'Bearer ' + localStorage.getItem('token'));
         },
         success: function (response) {
             if (response.id) {
+
                 table.clear().draw(false);
                 $.ajax({
-                    url: `https://localhost:5000/odata/subject?$expand=user&$filter=TeacherId eq '${response.id}'`,
+                    url: `https://localhost:5000/odata/grades?$expand=User,GradeCategory,Subject&$filter=User/Id eq '${response.id}'`,
                     type: "GET",
                     dataType: 'json',
                     beforeSend: function (xhr) {
                         // Set the Bearer token in the Authorization header
-                        xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+                        xhr.setRequestHeader('Authorization', 'Bearer ' + localStorage.getItem('token'));
                     },
-                    success: function (listSubjects) {
-                        var subjects = listSubjects.value;
-                        // Create view data subjects
-                        $.each(subjects, function (index, subject) {
+                    success: function (listGrades) {
+                        var grades = listGrades.value;
+                        // Create view data grades
+                        $.each(grades, function (index, grade) {
                             table.row.add([
-                                subject.Id,
-                                subject.Code,
-                                subject.Name,
-                                subject.User.Fullname,
-                                subject.User.Email,
+                                grade.StudentId,
+                                grade.User.Fullname,
+                                grade.Subject.Code,
+                                grade.GradeCategory.Name,
+                                grade.Grade,
                             ]).draw(false);
                         });
                     }

@@ -1,4 +1,5 @@
-﻿var table = $('table').DataTable({
+﻿var token = localStorage.getItem('token');
+var table = $('table').DataTable({
     autoWidth: true,
 });
 
@@ -8,8 +9,7 @@ $(document).on({
 });
 
 $(function () {
-    // render grades view
-    RenderGrades();
+    Authorize();
 
     $("#btn-add-grade").on("click", function () {
         ShowModelAdd();
@@ -46,6 +46,26 @@ $(function () {
     });
 });
 
+function Authorize() {
+    $.ajax({
+        url: 'https://localhost:5000/api/Authenticate/user/info',
+        type: 'GET',
+        dataType: 'json',
+        beforeSend: function (xhr) {
+            // Set the Bearer token in the Authorization header
+            xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+        },
+        success: function (response) {
+            if (response.role === 'Teacher') {
+                // render grades view
+                RenderGrades();
+            } else {
+                window.location.href = "/NotFound";
+            }
+        }
+    });
+}
+
 function SubmitFormAdd(selectorForm) {
     $.ajax({
         url: 'https://localhost:5000/api/Authenticate/user/info',
@@ -53,7 +73,7 @@ function SubmitFormAdd(selectorForm) {
         dataType: 'json',
         beforeSend: function (xhr) {
             // Set the Bearer token in the Authorization header
-            xhr.setRequestHeader('Authorization', 'Bearer ' + localStorage.getItem('token'));
+            xhr.setRequestHeader('Authorization', 'Bearer ' + token);
         },
         success: function (response) {
 
@@ -73,6 +93,10 @@ function SubmitFormAdd(selectorForm) {
                 type: "POST",
                 data: JSON.stringify(dataGrade),
                 contentType: "application/json",
+                beforeSend: function (xhr) {
+                    // Set the Bearer token in the Authorization header
+                    xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+                },
                 success: function (response) {
                     // add new row datatable
                     RenderGrades();
@@ -99,7 +123,7 @@ function SubmitFormEdit(selectorForm) {
         dataType: 'json',
         beforeSend: function (xhr) {
             // Set the Bearer token in the Authorization header
-            xhr.setRequestHeader('Authorization', 'Bearer ' + localStorage.getItem('token'));
+            xhr.setRequestHeader('Authorization', 'Bearer ' + token);
         },
         success: function (response) {
 
@@ -119,7 +143,7 @@ function SubmitFormEdit(selectorForm) {
                 contentType: "application/json",
                 beforeSend: function (xhr) {
                     // Set the Bearer token in the Authorization header
-                    xhr.setRequestHeader('Authorization', 'Bearer ' + localStorage.getItem('token'));
+                    xhr.setRequestHeader('Authorization', 'Bearer ' + token);
                 },
                 success: function (response) {
                     // edit row datatable
@@ -208,7 +232,7 @@ function LoadSelectSearchStudent(selectorSelectSearch, selectorModal, value) {
         dataType: "json",
         beforeSend: function (xhr) {
             // Set the Bearer token in the Authorization header
-            xhr.setRequestHeader('Authorization', 'Bearer ' + localStorage.getItem('token'));
+            xhr.setRequestHeader('Authorization', 'Bearer ' + token);
         },
         success: function (result, status, xhr) {
             $(selectorSelectSearch).append(`<optgroup label="[Id] Fullname"></optgroup>`);
@@ -242,7 +266,7 @@ function LoadSelecSearchSubject(selectorSelectSearch, selectorModal, value) {
         dataType: 'json',
         beforeSend: function (xhr) {
             // Set the Bearer token in the Authorization header
-            xhr.setRequestHeader('Authorization', 'Bearer ' + localStorage.getItem('token'));
+            xhr.setRequestHeader('Authorization', 'Bearer ' + token);
         },
         success: function (response) {
             if (response.id) {
@@ -251,6 +275,10 @@ function LoadSelecSearchSubject(selectorSelectSearch, selectorModal, value) {
                     type: "GET",
                     contentType: "application/json; charset=utf-8",
                     dataType: "json",
+                    beforeSend: function (xhr) {
+                        // Set the Bearer token in the Authorization header
+                        xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+                    },
                     success: function (result, status, xhr) {
                         $(selectorSelectSearch).append(`<optgroup label="[Id] Code"></optgroup>`);
                         $.each(result.value, function (index, subject) {
@@ -290,7 +318,7 @@ function LoadSelectSearchGradeCategory(selectorSelectSearch, selectorModal, valu
         dataType: "json",
         beforeSend: function (xhr) {
             // Set the Bearer token in the Authorization header
-            xhr.setRequestHeader('Authorization', 'Bearer ' + localStorage.getItem('token'));
+            xhr.setRequestHeader('Authorization', 'Bearer ' + token);
         },
         success: function (result, status, xhr) {
             $(selectorSelectSearch).append(`<optgroup label="Category"></optgroup>`);
@@ -344,7 +372,7 @@ function ShowModalEdit(studentId, subjectId, gradeCatId) {
         dataType: "json",
         beforeSend: function (xhr) {
             // Set the Bearer token in the Authorization header
-            xhr.setRequestHeader('Authorization', 'Bearer ' + localStorage.getItem('token'));
+            xhr.setRequestHeader('Authorization', 'Bearer ' + token);
         },
         success: function (grade, status, xhr) {
             // res only 1 record
@@ -377,7 +405,7 @@ function RenderGrades() {
         dataType: 'json',
         beforeSend: function (xhr) {
             // Set the Bearer token in the Authorization header
-            xhr.setRequestHeader('Authorization', 'Bearer ' + localStorage.getItem('token'));
+            xhr.setRequestHeader('Authorization', 'Bearer ' + token);
         },
         success: function (response) {
             if (response.id) {
@@ -389,7 +417,7 @@ function RenderGrades() {
                     dataType: 'json',
                     beforeSend: function (xhr) {
                         // Set the Bearer token in the Authorization header
-                        xhr.setRequestHeader('Authorization', 'Bearer ' + localStorage.getItem('token'));
+                        xhr.setRequestHeader('Authorization', 'Bearer ' + token);
                     },
                     success: function (listGrades) {
                         var grades = listGrades.value;
@@ -433,7 +461,7 @@ function DownloadTemplate() {
         },
         beforeSend: function (xhr) {
             // Set the Bearer token in the Authorization header
-            xhr.setRequestHeader('Authorization', 'Bearer ' + localStorage.getItem('token'));
+            xhr.setRequestHeader('Authorization', 'Bearer ' + token);
         },
         success: function (response) {
             var blob = new Blob([response], {
@@ -468,7 +496,7 @@ function ExportGrades() {
         },
         beforeSend: function (xhr) {
             // Set the Bearer token in the Authorization header
-            xhr.setRequestHeader('Authorization', 'Bearer ' + localStorage.getItem('token'));
+            xhr.setRequestHeader('Authorization', 'Bearer ' + token);
         },
         success: function (response) {
             var blob = new Blob([response], {
@@ -504,7 +532,7 @@ function ImportGrades(formData) {
         contentType: false,
         beforeSend: function (xhr) {
             // Set the Bearer token in the Authorization header
-            xhr.setRequestHeader('Authorization', 'Bearer ' + localStorage.getItem('token'));
+            xhr.setRequestHeader('Authorization', 'Bearer ' + token);
         },
         success: function (response) {
             RenderGrades();

@@ -8,8 +8,7 @@ $(document).on({
 });
 
 $(function () {
-    // render grades view
-    RenderGrades();
+    Authorize();
 
     $("#btn-add-grade").on("click", function () {
         ShowModelAdd();
@@ -45,6 +44,26 @@ $(function () {
         SubmitFormEdit('#form-edit-grade');
     });
 });
+
+function Authorize() {
+    $.ajax({
+        url: 'https://localhost:5000/api/Authenticate/user/info',
+        type: 'GET',
+        dataType: 'json',
+        beforeSend: function (xhr) {
+            // Set the Bearer token in the Authorization header
+            xhr.setRequestHeader('Authorization', 'Bearer ' + localStorage.getItem('token'));
+        },
+        success: function (response) {
+            if (response.role === 'Admin') {
+                // render grades view
+                RenderGrades();
+            } else {
+                window.location.href = "/NotFound";
+            }
+        }
+    });
+}
 
 function SubmitFormAdd(selectorForm) {
     $.ajax({
